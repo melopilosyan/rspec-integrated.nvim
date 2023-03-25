@@ -47,13 +47,20 @@ function spec:populate()
   return self.path
 end
 
+local function rspec_json_from(stdout)
+  local rspec_out
+
+  for _, line in ipairs(stdout) do
+    if line:find('"errors_outside_of_examples_count":') then rspec_out = line end
+  end
+
+  return rspec_out:gsub(COVERAGE_LINE_REGEX, "")
+end
+
 local function decode_json(stdout)
-  local ok, json, result
+  local json = rspec_json_from(stdout)
 
-  ok, json = pcall(string.gsub, stdout[1], COVERAGE_LINE_REGEX, "")
-  if not ok then print("Unknown stdout:", vim.inspect(stdout)); return end
-
-  ok, result = pcall(vim.json.decode, json)
+  local ok, result = pcall(vim.json.decode, json)
   if not ok then print("Invalid json:", json); return end
 
   return result
