@@ -29,20 +29,30 @@ local NT                  = { -- Notify titles
 local fmt = string.format
 local get_lines = vim.api.nvim_buf_get_lines
 
--- Current spec info
+-- Current test run info
 local spec = {
   cmd = { "bundle", "exec", "rspec", nil, "--format", "j" },
 }
-function spec:populate()
-  local path = vim.fn.expand("%:.")
 
-  if path ~= self.path and path:find(SPEC_FILE_PATTERN) then
-    self.path = path
+function spec:cmd_path(current_path, run_current_example)
+  if not run_current_example then return self.path end
+  if current_path ~= self.path then return self.cmd[4] end
+
+  local linenr = vim.api.nvim_win_get_cursor(0)[1]
+  return fmt("%s:%s", self.path, linenr)
+end
+
+function spec:populate(run_current_example)
+  local current_path = vim.fn.expand("%:.")
+
+  if current_path ~= self.path and current_path:find(SPEC_FILE_PATTERN) then
+    self.path = current_path
     self.bufnr = vim.api.nvim_get_current_buf()
-    self.cmd[4] = path
     self.cwd = vim.fn.getcwd() .. "/"
     self.cwd_length = #self.cwd + 1
   end
+
+  self.cmd[4] = self:cmd_path(current_path, run_current_example)
 
   return self.path
 end
@@ -182,8 +192,9 @@ function Integration:perform(result, replacement_notif)
 end
 
 return {
-  run_spec_file = function()
-    if not spec:populate() then return end
+  run_spec_file = function(options)
+    options = options or {}
+    if not spec:populate(options.only_current_example) then return end
 
     vim.cmd("silent! w")
 
