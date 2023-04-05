@@ -38,8 +38,7 @@ function spec:cmd_path(current_path, run_current_example)
   if not run_current_example then return self.path end
   if current_path ~= self.path then return self.cmd[4] end
 
-  local linenr = vim.api.nvim_win_get_cursor(0)[1]
-  return fmt("%s:%s", self.path, linenr)
+  return fmt("%s:%s", self.path, self.current_linenr)
 end
 
 function spec:populate(run_current_example)
@@ -52,6 +51,7 @@ function spec:populate(run_current_example)
     self.cwd_length = #self.cwd + 1
   end
 
+  self.current_linenr = vim.api.nvim_win_get_cursor(0)[1]
   self.cmd[4] = self:cmd_path(current_path, run_current_example)
 
   return self.path
@@ -106,7 +106,9 @@ local function linenr_col_message(exception)
     end
   end
 
-  return linenr, col, full_message(exception.message, exception.class, app_backtrace)
+  return linenr or spec.current_linenr,
+         col or 1,
+         full_message(exception.message, exception.class, app_backtrace)
 end
 
 local function notify(msg, log_level, title, replacement)
