@@ -198,7 +198,7 @@ return {
     options = options or {}
     if not spec:populate(options.only_current_example) then return end
 
-    vim.cmd("silent! w")
+    vim.cmd("silent! wa")
 
     local notif = notify(table.concat(spec.cmd, " "), LL.WARN, NT.running)
 
