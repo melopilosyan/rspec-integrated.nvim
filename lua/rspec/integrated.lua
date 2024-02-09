@@ -34,14 +34,19 @@ local spec = {
   cmd = { "bundle", "exec", "rspec", nil, "--format", "j" },
 }
 
-function spec:cmd_path(current_path, run_current_example)
-  if not run_current_example then return self.path end
+function spec:take_params(options)
+  options = options or {}
+  self.run_current_example = options.only_current_example
+end
+
+function spec:cmd_path(current_path)
+  if not self.run_current_example then return self.path end
   if current_path ~= self.path then return self.cmd[4] end
 
   return fmt("%s:%s", self.path, self.current_linenr)
 end
 
-function spec:populate(run_current_example)
+function spec:populate()
   local current_path = vim.fn.expand("%:.")
 
   if current_path ~= self.path and current_path:find(SPEC_FILE_PATTERN) then
@@ -52,7 +57,7 @@ function spec:populate(run_current_example)
   end
 
   self.current_linenr = vim.api.nvim_win_get_cursor(0)[1]
-  self.cmd[4] = self:cmd_path(current_path, run_current_example)
+  self.cmd[4] = self:cmd_path(current_path)
 
   return self.path
 end
@@ -194,9 +199,20 @@ function Integration:perform(result, replacement_notif)
 end
 
 return {
+  --- Plugin's entry point.
+  -- Runs RSpec
+  --    1) against current spec file
+  --    2) against the current test example if called with the `only_current_example = true` option
+  --    3) repeats last run if not in a spec file
+  --    0) does nothing if not in a spec file on first invocation
+  --
+  -- @param options table: Defines the behavior of the run.
+  -- @field only_current_example boolean:
+  --   Whether to run the entire spec file or just the test example the cursor is in.
   run_spec_file = function(options)
-    options = options or {}
-    if not spec:populate(options.only_current_example) then return end
+    spec:take_params(options)
+
+    if not spec:populate() then return end
 
     vim.cmd("silent! wa")
 
