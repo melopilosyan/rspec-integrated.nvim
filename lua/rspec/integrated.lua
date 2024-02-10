@@ -29,10 +29,24 @@ local NT                  = { -- Notify titles
 local fmt = string.format
 local get_lines = vim.api.nvim_buf_get_lines
 
--- Current test run info
-local spec = {
-  cmd = { "bundle", "exec", "rspec", nil, "--format", "j" },
-}
+-- Holds the run command and related information.
+local spec = {}
+
+function spec:resolve_cmd()
+  if self.cmd then return end
+
+  self.filepath_spot_in_cmd = 2
+
+  if vim.fn.executable("bin/rspec") == 1 then
+    self.cmd = { "bin/rspec", "PATH", "--format", "j" }
+  elseif vim.fn.filereadable("Gemfile") == 1 then
+    self.cmd = { "bundle", "exec", "rspec", nil, "--format", "j" }
+    self.filepath_spot_in_cmd = 4
+  else
+    self.cmd = { "rspec", "PATH", "--format", "j" }
+  end
+end
+spec:resolve_cmd()
 
 function spec:assign_params(options)
   options = options or {}
@@ -64,7 +78,7 @@ function spec:resolve_cmd_argument()
   if not self.in_spec_file then return end
 
   self.current_linenr = vim.api.nvim_win_get_cursor(0)[1]
-  self.cmd[4] = self:cmd_argument()
+  self.cmd[self.filepath_spot_in_cmd] = self:cmd_argument()
 end
 
 local function rspec_json_from(stdout)
