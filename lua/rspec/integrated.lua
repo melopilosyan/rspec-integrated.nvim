@@ -235,6 +235,12 @@ return {
         end
 
         Integration:perform(result, notif)
+      end,
+
+      stderr_buffered = true,
+      on_stderr = function(_, error)
+        local msg = vim.trim(table.concat(error, "\n"))
+        if #msg > 0 and not msg:find("Spring") then print("RSpec:", msg) end
       end
     })
   end,
