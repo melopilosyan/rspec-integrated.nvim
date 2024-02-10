@@ -66,6 +66,7 @@ spec:resolve_cmd()
 function spec:assign_params(options)
   options = options or {}
   self.run_current_example = options.only_current_example
+  self.repeat_last_run = options.repeat_last_run
 end
 
 function spec:cmd_argument()
@@ -80,6 +81,8 @@ function spec:should_update_path()
 end
 
 function spec:resolve_cmd_argument()
+  if self.repeat_last_run then return end
+
   self.current_path = vim.fn.expand("%:.")
   self.in_spec_file = self.current_path:find(SPEC_FILE_PATTERN)
 
@@ -234,15 +237,21 @@ end
 
 return {
   --- Plugin's entry point.
-  -- Runs RSpec
-  --    1) against current spec file
-  --    2) against the current test example if called with the `only_current_example = true` option
-  --    3) repeats last run if not in a spec file
-  --    0) does nothing if not in a spec file on first invocation
-  --
-  -- @param options table: Defines the behavior of the run.
-  -- @field only_current_example boolean:
-  --   Whether to run the entire spec file or just the test example the cursor is in.
+  ---
+  --- Runs RSpec
+  ---   1) against current spec file
+  ---   2) against the current test example
+  ---      if called with the `only_current_example = true` parameter
+  ---   3) repeats last run if not in a spec file
+  ---   4) repeats the last run
+  ---      if called with the `repeat_last_run = true` parameter
+  ---   0) does nothing if not in a spec file on first invocation
+  ---
+  ---@param options table: Defines the behavior of the run.
+  ---@field only_current_example? boolean
+  ---  Whether to run the entire spec file or just the test example the cursor is in.
+  ---@field repeat_last_run? boolean:
+  ---  Whether to execute the last command regardless of the current file and/or cursor position.
   run_spec_file = function(options)
     spec:assign_params(options)
     spec:resolve_cmd_argument()
