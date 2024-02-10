@@ -153,7 +153,7 @@ end
 local function notify(msg, log_level, title, replacement)
   return vim.notify(msg, log_level, {
     title   = title,
-    timeout = replacement and 7000 or MAX_NOTIFY_TIMEOUT_TO_COMPLETE_RSPEC,
+    timeout = replacement and 3000 or MAX_NOTIFY_TIMEOUT_TO_COMPLETE_RSPEC,
     replace = replacement,
   })
 end
