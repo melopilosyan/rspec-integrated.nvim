@@ -29,6 +29,21 @@ local NT                  = { -- Notify titles
 local fmt = string.format
 local get_lines = vim.api.nvim_buf_get_lines
 
+-- Measures execution time.
+local timer = {}
+
+function timer:reltime()
+  return vim.fn.reltimefloat(vim.fn.reltime())
+end
+
+function timer:start()
+  self.start_time = self:reltime()
+end
+
+function timer:duration()
+  return self:reltime() - self.start_time
+end
+
 -- Holds the run command and related information.
 local spec = {}
 
@@ -198,7 +213,7 @@ function Integration:notify_completion(replacement_notif)
   local log_level = succeeded and LL.INFO or LL.ERROR
 
   if succeeded then
-    message = fmt("%s   (duration: %s)", message, self.result.summary.duration)
+    message = fmt("%s   (duration: %.4f)", message, timer:duration())
   end
 
   notify(message, log_level, self.notif_title, replacement_notif)
@@ -237,6 +252,8 @@ return {
     vim.cmd("silent! wa")
 
     local notif = notify(table.concat(spec.cmd, " "), LL.WARN, NT.running)
+
+    timer:start()
 
     vim.fn.jobstart(spec.cmd, {
       cwd = spec.cwd,
