@@ -34,32 +34,37 @@ local spec = {
   cmd = { "bundle", "exec", "rspec", nil, "--format", "j" },
 }
 
-function spec:take_params(options)
+function spec:assign_params(options)
   options = options or {}
   self.run_current_example = options.only_current_example
 end
 
-function spec:cmd_path(current_path)
+function spec:cmd_argument()
   if not self.run_current_example then return self.path end
-  if current_path ~= self.path then return self.cmd[4] end
 
   return fmt("%s:%s", self.path, self.current_linenr)
 end
 
-function spec:populate()
-  local current_path = vim.fn.expand("%:.")
+function spec:should_update_path()
+  return not self.path and self.in_spec_file or
+      self.path and self.in_spec_file and self.current_path ~= self.path
+end
 
-  if current_path ~= self.path and current_path:find(SPEC_FILE_PATTERN) then
-    self.path = current_path
+function spec:resolve_cmd_argument()
+  self.current_path = vim.fn.expand("%:.")
+  self.in_spec_file = self.current_path:find(SPEC_FILE_PATTERN)
+
+  if self:should_update_path() then
+    self.path = self.current_path
     self.bufnr = vim.api.nvim_get_current_buf()
     self.cwd = vim.fn.getcwd() .. "/"
     self.cwd_length = #self.cwd + 1
   end
 
-  self.current_linenr = vim.api.nvim_win_get_cursor(0)[1]
-  self.cmd[4] = self:cmd_path(current_path)
+  if not self.in_spec_file then return end
 
-  return self.path
+  self.current_linenr = vim.api.nvim_win_get_cursor(0)[1]
+  self.cmd[4] = self:cmd_argument()
 end
 
 local function rspec_json_from(stdout)
@@ -210,9 +215,10 @@ return {
   -- @field only_current_example boolean:
   --   Whether to run the entire spec file or just the test example the cursor is in.
   run_spec_file = function(options)
-    spec:take_params(options)
+    spec:assign_params(options)
+    spec:resolve_cmd_argument()
 
-    if not spec:populate() then return end
+    if not spec.path then return end
 
     vim.cmd("silent! wa")
 
