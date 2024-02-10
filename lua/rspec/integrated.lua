@@ -68,7 +68,7 @@ function spec:resolve_cmd_argument()
 end
 
 local function rspec_json_from(stdout)
-  local rspec_out
+  local rspec_out = ""
 
   for _, line in ipairs(stdout) do
     if line:find('"errors_outside_of_examples_count":') then rspec_out = line end
@@ -81,7 +81,7 @@ local function decode_json(stdout)
   local json = rspec_json_from(stdout)
 
   local ok, result = pcall(vim.json.decode, json)
-  if not ok then print("Invalid json:", json); return end
+  if not ok then print(result, json); return end
 
   return result
 end
