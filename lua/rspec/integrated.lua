@@ -48,14 +48,12 @@ end
 local spec = {}
 
 function spec:resolve_cmd()
-  if self.cmd then return end
-
   self.filepath_spot_in_cmd = 2
 
   if vim.fn.executable("bin/rspec") == 1 then
     self.cmd = { "bin/rspec", "PATH", "--format", "j" }
   elseif vim.fn.filereadable("Gemfile") == 1 then
-    self.cmd = { "bundle", "exec", "rspec", nil, "--format", "j" }
+    self.cmd = { "bundle", "exec", "rspec", "PATH", "--format", "j" }
     self.filepath_spot_in_cmd = 4
   else
     self.cmd = { "rspec", "PATH", "--format", "j" }
