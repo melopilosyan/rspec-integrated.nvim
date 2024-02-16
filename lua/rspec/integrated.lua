@@ -135,7 +135,10 @@ local function linenr_col_message(exception)
   local linenr, col
   local app_backtrace = "Backtrace:"
 
-  for _, record in ipairs(exception.backtrace) do
+  local backtrace = exception.backtrace
+  if backtrace == vim.NIL then backtrace = {} end
+
+  for _, record in ipairs(backtrace) do
     -- Take only those records that come from the application files
     if record:find(spec.cwd) then
       if not linenr and record:find(spec.path) then
