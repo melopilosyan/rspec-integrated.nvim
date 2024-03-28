@@ -25,7 +25,7 @@ It makes use of Neovim's built-in features to integrate seamlessly into your exi
   1) `bin/rspec`
   2) `bundle exec rspec`
   3) `rspec`
-* Saves the current buffer before execution. One less action to keep in mind.
+* Saves open buffers before execution. One less action to keep in mind.
 
 ## Installation
 
