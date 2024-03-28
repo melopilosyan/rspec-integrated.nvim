@@ -97,11 +97,17 @@ function spec:resolve_cmd_argument()
   self.cmd[self.filepath_spot_in_cmd] = self:cmd_argument()
 end
 
+local not_json_output
 local function rspec_json_from(stdout)
   local rspec_out = ""
+  not_json_output = "\n"
 
   for _, line in ipairs(stdout) do
-    if line:find('"errors_outside_of_examples_count":') then rspec_out = line end
+    if line:find('"errors_outside_of_examples_count":') then
+      rspec_out = line
+    else
+      not_json_output = fmt("%s\n%s", not_json_output, line)
+    end
   end
 
   return rspec_out:gsub(COVERAGE_LINE_REGEX, "")
@@ -128,7 +134,7 @@ local function full_message(msg, klass, backtrace)
   local sep = msg:sub(1, 1) == "\n" and "\n" or "\n\n"
   local msg_class = klass:find(DROP_ERROR_CLASSES) and "" or klass .. "\n"
 
-  return fmt("%s%s%s%s%s", sep, msg_class, msg, sep, backtrace)
+  return fmt("%s%s%s%s%s\n\n%s", sep, msg_class, msg, sep, backtrace, not_json_output)
 end
 
 local function linenr_col_message(exception)
