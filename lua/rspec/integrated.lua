@@ -138,20 +138,24 @@ local function full_message(msg, klass, backtrace)
 end
 
 local function linenr_col_message(exception)
-  local linenr, col
+  local linenr, col, includes_cwd
   local app_backtrace = "Backtrace:"
 
   local backtrace = exception.backtrace
   if backtrace == vim.NIL then backtrace = {} end
 
   for _, record in ipairs(backtrace) do
+    includes_cwd = record:find(spec.cwd)
     -- Take only those records that come from the application files
-    if record:find(spec.cwd) then
+    if includes_cwd or record:match("^%./") then
       if not linenr and record:find(spec.path) then
         linenr, col = linenr_col(record)
       end
 
-      app_backtrace = fmt("%s\n%s", app_backtrace, record:sub(spec.cwd_length, -1))
+      if includes_cwd then
+        record = record:sub(spec.cwd_length, -1)
+      end
+      app_backtrace = fmt("%s\n%s", app_backtrace, record)
     end
   end
 
