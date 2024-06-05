@@ -42,7 +42,7 @@ use { "melopilosyan/rspec-integrated.nvim" }
 
 ##### With [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```
-{ "melopilosyan/rspec-integrated.nvim", event = "VeryLazy" }
+{ "melopilosyan/rspec-integrated.nvim", lazy = true }
 ```
 
 ## Usage
