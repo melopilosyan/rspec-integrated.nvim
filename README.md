@@ -8,24 +8,22 @@ It runs `*_spec.rb` files with [RSpec](https://rspec.info/).
 #### Integrated part
 It integrates the test results back into Neovim. So you don't have to take your attention away from coding.
 
-It makes use of Neovim's built-in features to integrate seamlessly into your existing workflow.
-
-* RSpec execution
-  * Started/completed notifications: `vim.notify`
-  * Asynchronous run: `vim.fn.jobstart`
-* Test result presentation: `vim.diagnostics`
+It uses Neovim's built-in features to fit seamlessly into your existing workflow:
+* `vim.notify` for notifications.
+* `vim.diagnostics` or `quickfix list` for presentation of test failures.
 
 ## Features
-* Runs RSpec test files.
+* Runs RSpec spec files individually, registering failures as Neovim diagnostic entries.
 * Executes a single test example determined by the cursor position.
 * Remembers the last spec file and can re-run it while in the production code buffer. \
   Ideal during TDD and/or refactoring.
 * Can repeat the last run on command.
-* Has good intuition when selecting the RSpec execution command from the available defaults.
+* Runs the test suite (except system tests), presenting failures as a quickfix list.
+* Has good intuition when choosing RSpec execution command (in the following order of availability):
   1) `bin/rspec`
   2) `bundle exec rspec`
   3) `rspec`
-* Saves open buffers before execution. One less action to keep in mind.
+* Saves open buffers before execution. (One less action to keep in mind.)
 * Shows non-RSpec output of the test run with error messages. \
   Hint: Use `puts obj.pretty_inspect` to see it as it appears in the IRB console.
 
@@ -46,28 +44,40 @@ use { "melopilosyan/rspec-integrated.nvim" }
 ```
 
 ## Usage
-By default `rspec-integrated.nvim` doesn't add any mappings or create user commands. In fact, it will be auto-loaded only on the first invocation.
+By default `rspec-integrated.nvim` doesn't add any mappings or create user commands.
+In fact, it will be auto-loaded only on the first invocation.
 
 Add mappings in your `neovim` configuration to invoke the exposed function.
 
 ```lua
 -- Lua API
 local opts = { silent = true, noremap = true }
-vim.keymap.set("n", "<leader>tI", "<cmd>lua require('rspec.integrated').run_spec_file()<cr>", opts)
-vim.keymap.set("n", "<leader>ti", "<cmd>lua require('rspec.integrated').run_spec_file({only_current_example = true})<cr>", opts)
-vim.keymap.set("n", "<leader>t.", "<cmd>lua require('rspec.integrated').run_spec_file({repeat_last_run = true})<cr>", opts)
+vim.keymap.set("n", "<leader>tI", "<cmd>lua require('rspec.integrated').run()<cr>", opts)
+vim.keymap.set("n", "<leader>ti", "<cmd>lua require('rspec.integrated').run({only_current_example = true})<cr>", opts)
+vim.keymap.set("n", "<leader>t.", "<cmd>lua require('rspec.integrated').run({repeat_last_run = true})<cr>", opts)
+vim.keymap.set("n", "<leader>tS", "<cmd>lua require('rspec.integrated').run({suite = true})<cr>", opts)
 ```
 
 ```vim
 " VimL
-nnoremap <leader>tI <cmd>lua require('rspec.integrated').run_spec_file()<cr>
-nnoremap <leader>ti <cmd>lua require('rspec.integrated').run_spec_file({only_current_example = true})<cr>
-nnoremap <leader>t. <cmd>lua require('rspec.integrated').run_spec_file({repeat_last_run = true})<cr>
+nnoremap <leader>tI <cmd>lua require('rspec.integrated').run()<cr>
+nnoremap <leader>ti <cmd>lua require('rspec.integrated').run({only_current_example = true})<cr>
+nnoremap <leader>t. <cmd>lua require('rspec.integrated').run({repeat_last_run = true})<cr>
+nnoremap <leader>tS <cmd>lua require('rspec.integrated').run({suite = true})<cr>
 ```
 
 ## Configuration
 The plugin has no configuration. \
-You should be able to just say “RSpec run” and see the notifications as you have configured them, or open/jump to diagnostic entries as you normally do with LSP or linter messages.
+You should be able to just say “RSpec run” and
+display/jump to diagnostic entries as you normally do with LSP or linter messages,
+or use quickfix list to navigate failures across multiple files.
 
-## Credits
-Big shout-out to [@tjdevries](https://github.com/tjdevries) for the initial idea valuable lessons. Watch [his video tutorial](https://www.youtube.com/watch?v=cf72gMBrsI0), which was the inspiration for `rspec-integrated.nvim`.
+Notifications designed to work with the [nvim-notify](https://github.com/rcarriga/nvim-notify) plugin.
+But even without it, you'll still see the Neovim's default print lines,
+or the look of the plugin assigned to `vim.notify`.
+
+## Credit
+Big shout-out to [@tjdevries](https://github.com/tjdevries) for the initial idea and
+valuable lessons on how to run external commands from Neovim and integrate the output
+back into the editor. Watch his video tutorial [Integrated Test Results in Neovim](https://www.youtube.com/watch?v=cf72gMBrsI0),
+which was the inspiration for `rspec-integrated.nvim`.

@@ -57,8 +57,8 @@ function spec:resolve_cmd()
 end
 spec:resolve_cmd()
 
+---@param options rspec.Options
 function spec:assign_params(options)
-  options = options or {}
   self.run_current_example = options.only_current_example
   self.repeat_last_run = options.repeat_last_run
 end
@@ -234,53 +234,34 @@ function Integration:perform(result, replacement_notif)
   vim.diagnostic.set(DIAG.namespace, spec.bufnr, integration.failures, DIAG.config)
 end
 
-return {
-  --- Plugin's entry point.
-  ---
-  --- Runs RSpec
-  ---   1) against current spec file
-  ---   2) against the current test example
-  ---      if called with the `only_current_example = true` parameter
-  ---   3) repeats last run if not in a spec file
-  ---   4) repeats the last run
-  ---      if called with the `repeat_last_run = true` parameter
-  ---   0) does nothing if not in a spec file on first invocation
-  ---
-  ---@param options table: Defines the behavior of the run.
-  ---@field only_current_example? boolean
-  ---  Whether to run the entire spec file or just the test example the cursor is in.
-  ---@field repeat_last_run? boolean:
-  ---  Whether to execute the last command regardless of the current file and/or cursor position.
-  run_spec_file = function(options)
-    spec:assign_params(options)
-    spec:resolve_cmd_argument()
+---@param options rspec.Options
+return function(options)
+  spec:assign_params(options)
+  spec:resolve_cmd_argument()
 
-    if not spec.path then return end
+  if not spec.path then return end
 
-    vim.cmd("silent! wa")
+  local notif = utils.notify(table.concat(spec.cmd, " "), LL.WARN, NT.running)
 
-    local notif = utils.notify(table.concat(spec.cmd, " "), LL.WARN, NT.running)
+  timer:start()
 
-    timer:start()
+  vim.fn.jobstart(spec.cmd, {
+    cwd = spec.cwd,
+    stdout_buffered = true,
+    on_stdout = function(_, output)
+      local result = decode_json(output)
 
-    vim.fn.jobstart(spec.cmd, {
-      cwd = spec.cwd,
-      stdout_buffered = true,
-      on_stdout = function(_, output)
-        local result = decode_json(output)
-
-        if not result then
-          return utils.notify("Failed to parse test output", LL.ERROR, NT.error, notif)
-        end
-
-        Integration:perform(result, notif)
-      end,
-
-      stderr_buffered = true,
-      on_stderr = function(_, error)
-        local msg = vim.trim(table.concat(error, "\n"))
-        if #msg > 0 and not msg:find("Spring") then print("RSpec:", msg) end
+      if not result then
+        return utils.notify("Failed to parse test output", LL.ERROR, NT.error, notif)
       end
-    })
-  end,
-}
+
+      Integration:perform(result, notif)
+    end,
+
+    stderr_buffered = true,
+    on_stderr = function(_, error)
+      local msg = vim.trim(table.concat(error, "\n"))
+      if #msg > 0 and not msg:find("Spring") then print("RSpec:", msg) end
+    end
+  })
+end
