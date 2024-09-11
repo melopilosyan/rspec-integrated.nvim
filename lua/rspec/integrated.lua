@@ -1,6 +1,6 @@
--- Local globals
-local MAX_NOTIFY_TIMEOUT_TO_COMPLETE_RSPEC = 60 * 60 * 1000
+local utils = require("rspec.utils")
 
+-- Local globals
 local COVERAGE_LINE_REGEX = "Coverage report generated.*$"
 local DROP_ERROR_CLASSES  = "RSpec::Expectations"
 local SPEC_FILE_PATTERN   = "_spec.rb$"
@@ -48,16 +48,12 @@ end
 local spec = {}
 
 function spec:resolve_cmd()
-  self.filepath_spot_in_cmd = 2
+  local cmd = utils.cmd()
 
-  if vim.fn.executable("bin/rspec") == 1 then
-    self.cmd = { "bin/rspec", "PATH", "--format", "j" }
-  elseif vim.fn.filereadable("Gemfile") == 1 then
-    self.cmd = { "bundle", "exec", "rspec", "PATH", "--format", "j" }
-    self.filepath_spot_in_cmd = 4
-  else
-    self.cmd = { "rspec", "PATH", "--format", "j" }
-  end
+  table.insert(cmd, "--format=j")
+
+  self.filepath_spot_in_cmd = #cmd + 1
+  self.cmd = cmd
 end
 spec:resolve_cmd()
 
@@ -164,14 +160,6 @@ local function linenr_col_message(exception)
          full_message(exception.message, exception.class, app_backtrace)
 end
 
-local function notify(msg, log_level, title, replacement)
-  return vim.notify(msg, log_level, {
-    title   = title,
-    timeout = replacement and 3000 or MAX_NOTIFY_TIMEOUT_TO_COMPLETE_RSPEC,
-    replace = replacement,
-  })
-end
-
 -- Namespace of methods sharing common data. Or just a pseudo-class.
 local Integration = {}
 Integration.__index = Integration
@@ -230,7 +218,7 @@ function Integration:notify_completion(replacement_notif)
     message = fmt("%s   (duration: %.4f)", message, timer:duration())
   end
 
-  notify(message, log_level, self.notif_title, replacement_notif)
+  utils.notify(message, log_level, self.notif_title, replacement_notif)
 end
 
 function Integration:perform(result, replacement_notif)
@@ -271,7 +259,7 @@ return {
 
     vim.cmd("silent! wa")
 
-    local notif = notify(table.concat(spec.cmd, " "), LL.WARN, NT.running)
+    local notif = utils.notify(table.concat(spec.cmd, " "), LL.WARN, NT.running)
 
     timer:start()
 
@@ -282,7 +270,7 @@ return {
         local result = decode_json(output)
 
         if not result then
-          return notify("Failed to parse test output", LL.ERROR, NT.error, notif)
+          return utils.notify("Failed to parse test output", LL.ERROR, NT.error, notif)
         end
 
         Integration:perform(result, notif)
