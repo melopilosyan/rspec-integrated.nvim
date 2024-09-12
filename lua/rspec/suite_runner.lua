@@ -33,9 +33,8 @@ local function to_qflist(failures)
   return qflist
 end
 
----@param stdout string RSpec command output of failed test entries
-local function show_as_quickfix_list(stdout)
-  local failures = vim.split(stdout, "\n", { trimempty = true })
+---@param failures string[] Failed test entries
+local function show_as_quickfix_list(failures)
   if #failures == 0 then return end
 
   vim.schedule(function()
@@ -47,12 +46,11 @@ end
 return function(_)
   local notif = utils.notify(table.concat(spec.cmd, " "), LL.WARN, "RSpec: Running the test suite...")
 
-  ---@param obj vim.SystemCompleted
-  vim.system(spec.cmd, { text = true }, function(obj)
-    if obj.code == 0 then
+  utils.system(spec.cmd, function(stdout, succeeded)
+    if succeeded then
       utils.notify("All tests passed", LL.INFO, "RSpec: Succeeded", notif)
     else
-      show_as_quickfix_list(obj.stdout)
+      show_as_quickfix_list(stdout)
 
       utils.notify("Failures added to quickfix list", LL.ERROR, "RSpec: Failed", notif)
     end

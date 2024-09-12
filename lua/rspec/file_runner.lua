@@ -228,10 +228,12 @@ function Integration:perform(result, replacement_notif)
     notif_title = NT.succeeded,
   }, self)
 
-  integration:process_test_result()
-  integration:notify_completion(replacement_notif)
+  vim.schedule(function()
+    integration:process_test_result()
+    integration:notify_completion(replacement_notif)
 
-  vim.diagnostic.set(DIAG.namespace, spec.bufnr, integration.failures, DIAG.config)
+    vim.diagnostic.set(DIAG.namespace, spec.bufnr, integration.failures, DIAG.config)
+  end)
 end
 
 ---@param options rspec.Options
@@ -245,23 +247,13 @@ return function(options)
 
   timer:start()
 
-  vim.fn.jobstart(spec.cmd, {
-    cwd = spec.cwd,
-    stdout_buffered = true,
-    on_stdout = function(_, output)
-      local result = decode_json(output)
+  utils.system(spec.cmd, function(stdout)
+    local result = decode_json(stdout)
 
-      if not result then
-        return utils.notify("Failed to parse test output", LL.ERROR, NT.error, notif)
-      end
-
-      Integration:perform(result, notif)
-    end,
-
-    stderr_buffered = true,
-    on_stderr = function(_, error)
-      local msg = vim.trim(table.concat(error, "\n"))
-      if #msg > 0 and not msg:find("Spring") then print("RSpec:", msg) end
+    if not result then
+      return utils.notify("Failed to parse test output", LL.ERROR, NT.error, notif)
     end
-  })
+
+    Integration:perform(result, notif)
+  end)
 end
