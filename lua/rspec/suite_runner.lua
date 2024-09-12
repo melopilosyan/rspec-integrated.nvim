@@ -46,11 +46,11 @@ end
 return function(_)
   local notif = utils.notify(table.concat(spec.cmd, " "), LL.WARN, "RSpec: Running the test suite...")
 
-  utils.system(spec.cmd, function(stdout, succeeded)
-    if succeeded then
-      utils.notify("All tests passed", LL.INFO, "RSpec: Succeeded", notif)
+  utils.system(spec.cmd, function(syscom)
+    if syscom.succeeded then
+      utils.notify(syscom.timer:attach_duration("All tests passed"), LL.INFO, "RSpec: Succeeded", notif)
     else
-      show_as_quickfix_list(stdout)
+      show_as_quickfix_list(syscom.stdout)
 
       utils.notify("Failures added to quickfix list", LL.ERROR, "RSpec: Failed", notif)
     end

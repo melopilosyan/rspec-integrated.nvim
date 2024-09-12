@@ -1,3 +1,5 @@
+local Timer = require("rspec.utils.timer")
+
 local M = {}
 local MAX_NOTIFY_TIMEOUT = 60 * 60 * 1000
 
@@ -20,11 +22,25 @@ M.cmd = function()
   end
 end
 
+---@class rspec.SystemCompleted
+--- Data passed down to the `vim.system` on exit callback
+---@field succeeded boolean Execution completed with return value 0
+---@field stdout string[] RSpec standard output as a list of strings
+---@field timer rspec.Timer
+
 ---@param cmd rspec.Cmd
----@param on_exit fun(stdout: string[], succeeded?: boolean)
+---@param on_exit fun(syscom: rspec.SystemCompleted)
 M.system = function(cmd, on_exit)
+  local timer = Timer:new()
+
   vim.system(cmd, { text = true }, function(obj)
-    on_exit(vim.split(obj.stdout, "\n", { trimempty = true }), obj.code == 0)
+    timer:save_duration()
+
+    on_exit({
+      stdout = vim.split(obj.stdout, "\n", { trimempty = true }),
+      succeeded = obj.code == 0,
+      timer = timer,
+    })
   end)
 end
 

@@ -29,21 +29,6 @@ local NT                  = { -- Notify titles
 local fmt = string.format
 local get_lines = vim.api.nvim_buf_get_lines
 
--- Measures execution time.
-local timer = {}
-
-function timer:reltime()
-  return vim.fn.reltimefloat(vim.fn.reltime())
-end
-
-function timer:start()
-  self.start_time = self:reltime()
-end
-
-function timer:duration()
-  return self:reltime() - self.start_time
-end
-
 -- Holds the run command and related information.
 local spec = {}
 
@@ -160,7 +145,11 @@ local function linenr_col_message(exception)
          full_message(exception.message, exception.class, app_backtrace)
 end
 
--- Namespace of methods sharing common data. Or just a pseudo-class.
+---@class rspec.FileIntegration
+---@field result table
+---@field failures table
+---@field notif_title string
+---@field syscom rspec.SystemCompleted
 local Integration = {}
 Integration.__index = Integration
 
@@ -215,17 +204,19 @@ function Integration:notify_completion(replacement_notif)
   local log_level = succeeded and LL.INFO or LL.ERROR
 
   if succeeded then
-    message = fmt("%s   (duration: %.4f)", message, timer:duration())
+    message = self.syscom.timer:attach_duration(message)
   end
 
   utils.notify(message, log_level, self.notif_title, replacement_notif)
 end
 
-function Integration:perform(result, replacement_notif)
+---@param syscom rspec.SystemCompleted
+function Integration:perform(result, replacement_notif, syscom)
   local integration = setmetatable({
     result = result,
     failures = {},
     notif_title = NT.succeeded,
+    syscom = syscom,
   }, self)
 
   vim.schedule(function()
@@ -245,15 +236,13 @@ return function(options)
 
   local notif = utils.notify(table.concat(spec.cmd, " "), LL.WARN, NT.running)
 
-  timer:start()
-
-  utils.system(spec.cmd, function(stdout)
-    local result = decode_json(stdout)
+  utils.system(spec.cmd, function(syscom)
+    local result = decode_json(syscom.stdout)
 
     if not result then
       return utils.notify("Failed to parse test output", LL.ERROR, NT.error, notif)
     end
 
-    Integration:perform(result, notif)
+    Integration:perform(result, notif, syscom)
   end)
 end
