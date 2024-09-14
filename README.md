@@ -1,6 +1,8 @@
 # rspec-integrated.nvim
 
-![rspec-integrated.nvim](https://user-images.githubusercontent.com/3795551/198903123-e935b51a-2725-488c-a517-19ef4dbeac88.png)
+![Image showing test failure as a Neovim diagnostic entry](https://user-images.githubusercontent.com/3795551/198903123-e935b51a-2725-488c-a517-19ef4dbeac88.png)
+
+![Image of multiple failed test files listed in the quickfix list](https://github.com/user-attachments/assets/621dfd32-0b1e-4e3c-85a0-a27ce47b3ec2)
 
 #### RSpec part
 It runs `*_spec.rb` files with [RSpec](https://rspec.info/).
