@@ -1,9 +1,14 @@
 local Timer = require("rspec.utils.timer")
+local Notif = require("rspec.utils.notif")
 
 local M = {}
-local MAX_NOTIFY_TIMEOUT = 60 * 60 * 1000
 
 ---@alias rspec.Cmd string[] RSpec command for the project
+
+---@class rspec.Spec
+--- Execution specification
+---@field cmd rspec.Cmd
+---@field path? string Test file path
 
 --- Defines the RSpec execution command for the project.
 ---
@@ -23,33 +28,28 @@ M.cmd = function()
 end
 
 ---@class rspec.SystemCompleted
---- Data passed down to the `vim.system` on exit callback
+--- Data passed down to the `utils.execute` on exit callback
 ---@field succeeded boolean Execution completed with return value 0
 ---@field stdout string[] RSpec standard output as a list of strings
 ---@field timer rspec.Timer
+---@field notif rspec.Notif
 
----@param cmd rspec.Cmd
+---@param spec rspec.Spec
 ---@param on_exit fun(syscom: rspec.SystemCompleted)
-M.system = function(cmd, on_exit)
+M.execute = function(spec, on_exit)
+  local notif = Notif:new(spec)
   local timer = Timer:new()
 
-  vim.system(cmd, { text = true }, function(obj)
+  vim.system(spec.cmd, { text = true }, function(obj)
     timer:save_duration()
 
     on_exit({
       stdout = vim.split(obj.stdout, "\n", { trimempty = true }),
       succeeded = obj.code == 0,
       timer = timer,
+      notif = notif,
     })
   end)
-end
-
-M.notify = function(msg, log_level, title, replacement)
-  return vim.notify(msg, log_level, {
-    title   = title,
-    timeout = replacement and 3000 or MAX_NOTIFY_TIMEOUT,
-    replace = replacement,
-  })
 end
 
 return M

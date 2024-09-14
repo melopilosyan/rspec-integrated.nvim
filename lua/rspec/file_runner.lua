@@ -7,7 +7,6 @@ local SPEC_FILE_PATTERN   = "_spec.rb$"
 local FIRST_CHARACTER     = "%S"
 local FAILURE_STATUS      = "failed"
 local LINENR_REGEX        = ":(%d+)"
-local LL                  = vim.log.levels
 local DIAG                = { -- Diagnostics info
   source    = "RSpec",
   severity  = vim.diagnostic.severity.ERROR,
@@ -18,18 +17,12 @@ local DIAG                = { -- Diagnostics info
     },
   },
 }
-local NT                  = { -- Notify titles
-  running   = "RSpec: Running...",
-  succeeded = "RSpec: Succeeded",
-  failed    = "RSpec: Failed",
-  error     = "RSpec: Error",
-}
 
 -- Local references of functions
 local fmt = string.format
 local get_lines = vim.api.nvim_buf_get_lines
 
--- Holds the run command and related information.
+---@class rspec.FileSpec : rspec.Spec
 local spec = {}
 
 function spec:resolve_cmd()
@@ -148,7 +141,7 @@ end
 ---@class rspec.FileIntegration
 ---@field result table
 ---@field failures table
----@field notif_title string
+---@field notif_title? string
 ---@field syscom rspec.SystemCompleted
 local Integration = {}
 Integration.__index = Integration
@@ -187,41 +180,35 @@ function Integration:process_test_result()
     local linenr, col = linenr_col(message)
 
     self:insert_failure(linenr, col, message)
-    self.notif_title = NT.error
+    self.notif_title = "RSpec: Error"
 
   elseif summary.example_count == 0 then
     self.notif_title = self.result.messages[1]
 
   elseif summary.failure_count > 0 then
     self:populate_failures()
-    self.notif_title = NT.failed
   end
 end
 
-function Integration:notify_completion(replacement_notif)
-  local message = self.result.summary_line
-  local succeeded = vim.tbl_isempty(self.failures)
-  local log_level = succeeded and LL.INFO or LL.ERROR
-
-  if succeeded then
-    message = self.syscom.timer:attach_duration(message)
+function Integration:notify_completion()
+  if vim.tbl_isempty(self.failures) then
+    self.syscom.notif:success(self.syscom.timer:attach_duration(self.result.summary_line))
+  else
+    self.syscom.notif:failure(self.result.summary_line, self.notif_title)
   end
-
-  utils.notify(message, log_level, self.notif_title, replacement_notif)
 end
 
 ---@param syscom rspec.SystemCompleted
-function Integration:perform(result, replacement_notif, syscom)
+function Integration:perform(result, syscom)
   local integration = setmetatable({
     result = result,
     failures = {},
-    notif_title = NT.succeeded,
     syscom = syscom,
   }, self)
 
   vim.schedule(function()
     integration:process_test_result()
-    integration:notify_completion(replacement_notif)
+    integration:notify_completion()
 
     vim.diagnostic.set(DIAG.namespace, spec.bufnr, integration.failures, DIAG.config)
   end)
@@ -234,15 +221,13 @@ return function(options)
 
   if not spec.path then return end
 
-  local notif = utils.notify(table.concat(spec.cmd, " "), LL.WARN, NT.running)
-
-  utils.system(spec.cmd, function(syscom)
+  utils.execute(spec, function(syscom)
     local result = decode_json(syscom.stdout)
 
     if not result then
-      return utils.notify("Failed to parse test output", LL.ERROR, NT.error, notif)
+      return syscom.notif:failure("Failed to parse test output", "RSpec: Error")
     end
 
-    Integration:perform(result, notif, syscom)
+    Integration:perform(result, syscom)
   end)
 end

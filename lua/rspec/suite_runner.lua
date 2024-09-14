@@ -1,7 +1,5 @@
 local utils = require("rspec.utils")
 
-local LL = vim.log.levels
-
 local function resolve_cmd()
   local cmd = utils.cmd()
 
@@ -11,9 +9,7 @@ local function resolve_cmd()
   return cmd
 end
 
----@class rspec.SuiteSpec
---- Execution metadata
----@field cmd string[] RSpec command for the project
+---@class rspec.SuiteSpec : rspec.Spec
 local spec = { cmd = resolve_cmd() }
 
 ---@param failures string[] List of strings in "file/path:line-number:failed test description" format
@@ -44,15 +40,13 @@ local function show_as_quickfix_list(failures)
 end
 
 return function(_)
-  local notif = utils.notify(table.concat(spec.cmd, " "), LL.WARN, "RSpec: Running the test suite...")
-
-  utils.system(spec.cmd, function(syscom)
+  utils.execute(spec, function(syscom)
     if syscom.succeeded then
-      utils.notify(syscom.timer:attach_duration("All tests passed"), LL.INFO, "RSpec: Succeeded", notif)
+      syscom.notif:success(syscom.timer:attach_duration("All tests passed"))
     else
       show_as_quickfix_list(syscom.stdout)
 
-      utils.notify("Failures added to quickfix list", LL.ERROR, "RSpec: Failed", notif)
+      syscom.notif:failure("See the quickfix list")
     end
   end)
 end
