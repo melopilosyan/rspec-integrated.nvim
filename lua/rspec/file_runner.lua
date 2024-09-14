@@ -47,8 +47,7 @@ function spec:cmd_argument()
 end
 
 function spec:should_update_path()
-  return not self.path and self.in_spec_file or
-      self.path and self.in_spec_file and self.current_path ~= self.path
+  return self.in_spec_file and (not self.path or self.current_path ~= self.path)
 end
 
 function spec:resolve_cmd_argument()
