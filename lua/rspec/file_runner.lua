@@ -1,7 +1,6 @@
 local utils = require("rspec.utils")
 
 -- Local globals
-local COVERAGE_LINE_REGEX = "Coverage report generated.*$"
 local DROP_ERROR_CLASSES  = "RSpec::Expectations"
 local SPEC_FILE_PATTERN   = "_spec.rb$"
 local FIRST_CHARACTER     = "%S"
@@ -81,7 +80,7 @@ local function decode_json(stdout)
 
   for _, line in ipairs(stdout) do
     if line:find('"errors_outside_of_examples_count":') then
-      json = line:gsub(COVERAGE_LINE_REGEX, "")
+      json = line:match("({.*})")
     else
       not_json_output = fmt("%s\n%s", not_json_output, line)
     end
