@@ -72,28 +72,22 @@ function spec:resolve_cmd_argument()
 end
 
 local not_json_output
-local function rspec_json_from(stdout)
-  local rspec_out = ""
+
+---@param stdout string[]
+---@return boolean, string
+local function decode_json(stdout)
+  local json = ""
   not_json_output = "\n"
 
   for _, line in ipairs(stdout) do
     if line:find('"errors_outside_of_examples_count":') then
-      rspec_out = line
+      json = line:gsub(COVERAGE_LINE_REGEX, "")
     else
       not_json_output = fmt("%s\n%s", not_json_output, line)
     end
   end
 
-  return rspec_out:gsub(COVERAGE_LINE_REGEX, "")
-end
-
-local function decode_json(stdout)
-  local json = rspec_json_from(stdout)
-
-  local ok, result = pcall(vim.json.decode, json)
-  if not ok then print(result, json); return end
-
-  return result
+  return pcall(vim.json.decode, json)
 end
 
 local function linenr_col(backtrace_line)
@@ -222,12 +216,12 @@ return function(options)
   if not spec.path then return end
 
   utils.execute(spec, function(syscom)
-    local result = decode_json(syscom.stdout)
+    local ok, result = decode_json(syscom.stdout)
 
-    if not result then
-      return syscom.notif:failure("Failed to parse test output", "RSpec: Error")
+    if ok then
+      Integration:perform(result, syscom)
+    else
+      syscom.notif:failure(result, "RSpec: Error")
     end
-
-    Integration:perform(result, syscom)
   end)
 end
