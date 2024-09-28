@@ -22,17 +22,8 @@ local fmt = string.format
 local get_lines = vim.api.nvim_buf_get_lines
 
 ---@class rspec.FileSpec : rspec.Spec
-local spec = {}
-
-function spec:resolve_cmd()
-  local cmd = utils.cmd()
-
-  table.insert(cmd, "--format=j")
-
-  self.filepath_spot_in_cmd = #cmd + 1
-  self.cmd = cmd
-end
-spec:resolve_cmd()
+local spec = utils.spec({ "--format=j" })
+spec.filepath_spot_in_cmd = #spec.cmd + 1
 
 ---@param options rspec.Options
 function spec:assign_params(options)

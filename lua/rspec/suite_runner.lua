@@ -1,16 +1,7 @@
 local utils = require("rspec.utils")
 
-local function resolve_cmd()
-  local cmd = utils.cmd()
-
-  table.insert(cmd, "--format=f")
-  table.insert(cmd, "--exclude-pattern=spec/system/*")
-
-  return cmd
-end
-
 ---@class rspec.SuiteSpec : rspec.Spec
-local spec = { cmd = resolve_cmd() }
+local spec = utils.spec({ "--format=f", "--exclude-pattern=spec/system/*" })
 
 ---@param failures string[] List of strings in "file/path:line-number:failed test description" format
 local function to_qflist(failures)

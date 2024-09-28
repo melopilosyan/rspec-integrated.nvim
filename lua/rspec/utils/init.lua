@@ -3,21 +3,14 @@ local Notif = require("rspec.utils.notif")
 
 local M = {}
 
----@alias rspec.Cmd string[] RSpec command for the project
-
----@class rspec.Spec
---- Execution specification
----@field cmd rspec.Cmd
----@field path? string Test file path
-
 --- Defines the RSpec execution command for the project.
 ---
 --- In the following order of availability:
 ---   `bin/rspec` - Typically found in Rails apps.
 ---   `bundle exec rspec` - Ruby projects managed via bundler.
 ---   `rspec` - The default RSpec executable.
----@return rspec.Cmd
-M.cmd = function()
+---@return string[]
+local function command()
   if vim.fn.executable("bin/rspec") == 1 then
     return { "bin/rspec" }
   elseif vim.fn.filereadable("Gemfile") == 1 then
@@ -25,6 +18,20 @@ M.cmd = function()
   else
     return { "rspec" }
   end
+end
+
+---@class rspec.Spec
+--- Execution specification
+---@field cmd string[] RSpec command for the project
+---@field path? string Test file path
+
+---@return rspec.Spec
+M.spec = function(command_arguments)
+  local cmd = command()
+
+  for _, arg in ipairs(command_arguments) do table.insert(cmd, arg) end
+
+  return { cmd = cmd }
 end
 
 ---@class rspec.SystemCompleted
