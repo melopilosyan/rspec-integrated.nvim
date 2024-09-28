@@ -42,11 +42,11 @@ end
 return function(_)
   utils.execute(spec, function(syscom)
     if syscom.succeeded then
-      syscom.notif:success(syscom.timer:attach_duration("All tests passed"))
+      syscom.notif.success(syscom.timer:attach_duration("All tests passed"))
     else
       show_as_quickfix_list(syscom.stdout)
 
-      syscom.notif:failure("See the quickfix list")
+      syscom.notif.failure("See the quickfix list")
     end
   end)
 end

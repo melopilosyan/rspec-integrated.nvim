@@ -184,9 +184,9 @@ end
 
 function Integration:notify_completion()
   if vim.tbl_isempty(self.failures) then
-    self.syscom.notif:success(self.syscom.timer:attach_duration(self.result.summary_line))
+    self.syscom.notif.success(self.syscom.timer:attach_duration(self.result.summary_line))
   else
-    self.syscom.notif:failure(self.result.summary_line, self.notif_title)
+    self.syscom.notif.failure(self.result.summary_line, self.notif_title)
   end
 end
 
@@ -219,7 +219,7 @@ return function(options)
     if ok then
       Integration:perform(result, syscom)
     else
-      syscom.notif:failure(result, "RSpec: Error")
+      syscom.notif.failure(result, "RSpec: Error")
     end
   end)
 end

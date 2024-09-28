@@ -37,7 +37,7 @@ end
 ---@param spec rspec.Spec
 ---@param on_exit fun(syscom: rspec.SystemCompleted)
 M.execute = function(spec, on_exit)
-  local notif = Notif:new(spec)
+  local notif = Notif(spec)
   local timer = Timer:new()
 
   vim.system(spec.cmd, { text = true }, function(obj)

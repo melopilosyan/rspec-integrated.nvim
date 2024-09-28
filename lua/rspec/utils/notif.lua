@@ -1,20 +1,5 @@
 local nvim_notify_loaded, _ = pcall(require, "notify")
 
-local LL = vim.log.levels
-local Icons = {
-  ERROR = " ",
-  INFO = " ",
-}
-
-local icon_frames = { "⣷", "⣯", "⣟", "⡿", "⢿", "⣻", "⣽", "⣾" }
-icon_frames.count = #icon_frames
-
----@param notif rspec.Notif
-function icon_frames:next_for(notif)
-  notif.frame = (notif.frame + 1) % self.count
-  return self[notif.frame]
-end
-
 ---@param spec rspec.Spec
 local function openning_notification_title(spec)
   if not spec.path then return "RSpec: Running the test suite..." end
@@ -23,67 +8,61 @@ local function openning_notification_title(spec)
       or "RSpec: Running a file..."
 end
 
----@class rspec.Notif
----@field package frame number
----@field private predecessor any nvim-notify record
-local Notif = {}
-
 ---@param spec rspec.Spec
-function Notif:new(spec)
-  self.__index = self
+return function(spec)
+  local icons = {
+    ERROR = " ",
+    INFO = " ",
+  }
 
-  local instance = setmetatable({
-    frame = 1,
-    predecessor = vim.notify(table.concat(spec.cmd, " "), LL.WARN, {
-      title = openning_notification_title(spec),
-      icon = icon_frames[1],
-      timeout = false,
+  ---@type number|nil Progress frame index or nil to stop
+  local frame = 1
+  local progress_frames = { "⣷", "⣯", "⣟", "⡿", "⢿", "⣻", "⣽", "⣾" }
+  local notification = nil
+
+  local function notify(msg, ll, opts)
+    opts.replace = notification
+    opts.icon = opts.icon or progress_frames[frame]
+
+    notification = vim.notify(msg, ll, opts)
+  end
+
+  local function simulate_progress_animation()
+    if frame == nil then return end
+
+    frame = (frame + 1) % #progress_frames
+    notify(nil, nil, { hide_from_history = true })
+
+    vim.defer_fn(simulate_progress_animation, 150)
+  end
+
+  local function complete(msg, level, title)
+    frame = nil
+
+    notify(msg, vim.log.levels[level], {
+      icon = icons[level],
+      title = title,
+      timeout = 3000,
+      hide_from_history = false,
     })
-  }, self)
+  end
 
-  if nvim_notify_loaded then instance:show_loading() end
-
-  return instance
-end
-
----@param msg string
-function Notif:success(msg)
-  self:complete(msg, "INFO", "RSpec: Succeeded")
-end
-
----@param msg string
----@param title? string
-function Notif:failure(msg, title)
-  self:complete(msg, "ERROR", title or "RSpec: Failed")
-end
-
----@private
----@param msg string
----@param level string
----@param title string
-function Notif:complete(msg, level, title)
-  self.frame = nil
-
-  self.predecessor = vim.notify(msg, LL[level], {
-    icon = Icons[level],
-    title = title,
-    timeout = 3000,
-    replace = self.predecessor,
-    hide_from_history = false,
-  })
-end
-
----@private
-function Notif:show_loading()
-  if not self.frame then return end
-
-  self.predecessor = vim.notify(nil, nil, {
-    icon = icon_frames:next_for(self),
-    replace = self.predecessor,
-    hide_from_history = true,
+  notify(table.concat(spec.cmd, " "), vim.log.levels.WARN, {
+    title = openning_notification_title(spec),
+    timeout = false,
   })
 
-  vim.defer_fn(function() self:show_loading() end, 150)
-end
+  if nvim_notify_loaded then simulate_progress_animation() end
 
-return Notif
+  ---@class rspec.Notif
+  ---@field success fun(msg: string)
+  ---@field failure fun(msg: string, title?: string)
+  return {
+    success = function(msg)
+      complete(msg, "INFO", "RSpec: Succeeded")
+    end,
+    failure = function(msg, title)
+      complete(msg, "ERROR", title or "RSpec: Failed")
+    end,
+  }
+end
