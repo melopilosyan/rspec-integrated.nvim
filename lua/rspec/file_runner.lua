@@ -125,7 +125,6 @@ end
 ---@field result table
 ---@field failures table
 ---@field notif_title? string
----@field syscom rspec.SystemCompleted
 local Integration = {}
 Integration.__index = Integration
 
@@ -173,25 +172,25 @@ function Integration:process_test_result()
   end
 end
 
-function Integration:notify_completion()
-  if vim.tbl_isempty(self.failures) then
-    self.syscom.notif.success(self.syscom.timer:attach_duration(self.result.summary_line))
+---@param exec rspec.ExecutionResultContext
+function Integration:notify_completion(exec)
+  if #self.failures == 0 then
+    exec.notify_success(self.result.summary_line)
   else
-    self.syscom.notif.failure(self.result.summary_line, self.notif_title)
+    exec.notify_failure(self.result.summary_line, self.notif_title)
   end
 end
 
----@param syscom rspec.SystemCompleted
-function Integration:perform(result, syscom)
+---@param exec rspec.ExecutionResultContext
+function Integration:perform(result, exec)
   local integration = setmetatable({
     result = result,
     failures = {},
-    syscom = syscom,
   }, self)
 
   vim.schedule(function()
     integration:process_test_result()
-    integration:notify_completion()
+    integration:notify_completion(exec)
 
     vim.diagnostic.set(DIAG.namespace, spec.bufnr, integration.failures, DIAG.config)
   end)
@@ -204,13 +203,13 @@ return function(options)
 
   if not spec.path then return end
 
-  utils.execute(spec, function(syscom)
-    local ok, result = decode_json(syscom.stdout)
+  utils.execute(spec, function(exec)
+    local ok, result = decode_json(exec.stdout)
 
     if ok then
-      Integration:perform(result, syscom)
+      Integration:perform(result, exec)
     else
-      syscom.notif.failure(result, "RSpec: Error")
+      exec.notify_failure(result, "RSpec: Error")
     end
   end)
 end

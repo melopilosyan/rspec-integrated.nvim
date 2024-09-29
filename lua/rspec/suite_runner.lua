@@ -31,13 +31,13 @@ local function show_as_quickfix_list(failures)
 end
 
 return function(_)
-  utils.execute(spec, function(syscom)
-    if syscom.succeeded then
-      syscom.notif.success(syscom.timer:attach_duration("All tests passed"))
+  utils.execute(spec, function(exec)
+    if exec.succeeded then
+      exec.notify_success("All tests passed")
     else
-      show_as_quickfix_list(syscom.stdout)
+      show_as_quickfix_list(exec.stdout)
 
-      syscom.notif.failure("See the quickfix list")
+      exec.notify_failure("See the quickfix list")
     end
   end)
 end

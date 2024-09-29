@@ -34,15 +34,14 @@ M.spec = function(command_arguments)
   return { cmd = cmd }
 end
 
----@class rspec.SystemCompleted
---- Data passed down to the `utils.execute` on exit callback
----@field succeeded boolean Execution completed with return value 0
----@field stdout string[] RSpec standard output as a list of strings
----@field timer rspec.Timer
----@field notif rspec.Notif
+---@class rspec.ExecutionResultContext
+---@field stdout string[]
+---@field succeeded boolean
+---@field notify_success fun(msg: string)
+---@field notify_failure fun(msg: string|string[], title?: string)
 
 ---@param spec rspec.Spec
----@param on_exit fun(syscom: rspec.SystemCompleted)
+---@param on_exit fun(exec: rspec.ExecutionResultContext)
 M.execute = function(spec, on_exit)
   local notif = Notif(spec)
   local timer = Timer:new()
@@ -53,8 +52,10 @@ M.execute = function(spec, on_exit)
     on_exit({
       stdout = vim.split(obj.stdout, "\n", { trimempty = true }),
       succeeded = obj.code == 0,
-      timer = timer,
-      notif = notif,
+      notify_failure = notif.failure,
+      notify_success = function(msg)
+        notif.success(timer:attach_duration(msg))
+      end,
     })
   end)
 end
