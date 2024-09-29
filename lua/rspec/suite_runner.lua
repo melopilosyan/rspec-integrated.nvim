@@ -20,20 +20,13 @@ local function to_qflist(failures)
   return qflist
 end
 
----@param failures string[] Failed test entries
-local function show_as_quickfix_list(failures)
-  vim.schedule(function()
-    vim.fn.setqflist(to_qflist(failures), "r")
-    vim.cmd("copen")
-  end)
-end
-
 return function(_)
   utils.execute(spec, function(exec)
     if exec.succeeded then
       exec.notify_success("All tests passed")
     else
-      show_as_quickfix_list(exec.stdout)
+      vim.fn.setqflist(to_qflist(exec.stdout), "r")
+      vim.cmd("copen")
 
       exec.notify_failure("See the quickfix list")
     end

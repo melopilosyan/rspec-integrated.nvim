@@ -188,12 +188,10 @@ function Integration:perform(result, exec)
     failures = {},
   }, self)
 
-  vim.schedule(function()
-    integration:process_test_result()
-    integration:notify_completion(exec)
+  integration:process_test_result()
+  integration:notify_completion(exec)
 
-    vim.diagnostic.set(DIAG.namespace, spec.bufnr, integration.failures, DIAG.config)
-  end)
+  vim.diagnostic.set(DIAG.namespace, spec.bufnr, integration.failures, DIAG.config)
 end
 
 ---@param options rspec.Options

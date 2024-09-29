@@ -69,7 +69,8 @@ M.execute = function(spec, on_exit)
   local notif = Notif(spec)
   local timer = Timer:new()
 
-  vim.system(spec.cmd, { text = true }, function(obj)
+  ---@param obj vim.SystemCompleted
+  vim.system(spec.cmd, { text = true }, vim.schedule_wrap(function(obj)
     timer:save_duration()
 
     if obj.code ~= 0 and #obj.stdout == 0 then
@@ -86,7 +87,7 @@ M.execute = function(spec, on_exit)
         notif.success(timer:attach_duration(msg))
       end,
     })
-  end)
+  end))
 end
 
 return M
