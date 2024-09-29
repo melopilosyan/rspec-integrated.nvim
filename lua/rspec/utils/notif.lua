@@ -56,12 +56,16 @@ return function(spec)
 
   ---@class rspec.Notif
   ---@field success fun(msg: string)
-  ---@field failure fun(msg: string, title?: string)
+  ---@field failure fun(msg: string|string[], title?: string)
   return {
     success = function(msg)
       complete(msg, "INFO", "RSpec: Succeeded")
     end,
+
     failure = function(msg, title)
+      if not nvim_notify_loaded and type(msg) == "table" then
+        msg = table.concat(msg, "\n")
+      end
       complete(msg, "ERROR", title or "RSpec: Failed")
     end,
   }

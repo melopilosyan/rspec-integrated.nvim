@@ -22,8 +22,6 @@ end
 
 ---@param failures string[] Failed test entries
 local function show_as_quickfix_list(failures)
-  if #failures == 0 then return end
-
   vim.schedule(function()
     vim.fn.setqflist(to_qflist(failures), "r")
     vim.cmd("copen")
