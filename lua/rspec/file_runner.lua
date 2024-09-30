@@ -22,8 +22,13 @@ local fmt = string.format
 local get_lines = vim.api.nvim_buf_get_lines
 
 ---@class rspec.FileSpec : rspec.Spec
-local spec = utils.spec({ "--format=j" })
-spec.filepath_spot_in_cmd = #spec.cmd + 1
+local spec = require("rspec.spec")()
+
+function spec:on_cmd_changed()
+  self:apply_cmd_options({ "--format=json" })
+  self.filepath_position = #self.cmd + 1
+  self.cwd_length = #self.cwd + 1
+end
 
 ---@param options rspec.Options
 function spec:assign_params(options)
@@ -50,14 +55,12 @@ function spec:resolve_cmd_argument()
   if self:should_update_path() then
     self.path = self.current_path
     self.bufnr = vim.api.nvim_get_current_buf()
-    self.cwd = vim.fn.getcwd() .. "/"
-    self.cwd_length = #self.cwd + 1
   end
 
   if not self.in_spec_file then return end
 
   self.current_linenr = vim.api.nvim_win_get_cursor(0)[1]
-  self.cmd[self.filepath_spot_in_cmd] = self:cmd_argument()
+  self.cmd[self.filepath_position] = self:cmd_argument()
 end
 
 local not_json_output
@@ -196,6 +199,7 @@ end
 
 ---@param options rspec.Options
 return function(options)
+  spec:resolve_cmd()
   spec:assign_params(options)
   spec:resolve_cmd_argument()
 

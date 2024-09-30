@@ -3,37 +3,6 @@ local Notif = require("rspec.utils.notif")
 
 local M = {}
 
---- Defines the RSpec execution command for the project.
----
---- In the following order of availability:
----   `bin/rspec` - Typically found in Rails apps.
----   `bundle exec rspec` - Ruby projects managed via bundler.
----   `rspec` - The default RSpec executable.
----@return string[]
-local function command()
-  if vim.fn.executable("bin/rspec") == 1 then
-    return { "bin/rspec" }
-  elseif vim.fn.filereadable("Gemfile") == 1 then
-    return { "bundle", "exec", "rspec" }
-  else
-    return { "rspec" }
-  end
-end
-
----@class rspec.Spec
---- Execution specification
----@field cmd string[] RSpec command for the project
----@field path? string Test file path
-
----@return rspec.Spec
-M.spec = function(command_arguments)
-  local cmd = command()
-
-  for _, arg in ipairs(command_arguments) do table.insert(cmd, arg) end
-
-  return { cmd = cmd }
-end
-
 ---@class rspec.ExecutionResultContext
 ---@field stdout string[]
 ---@field succeeded boolean
@@ -67,6 +36,11 @@ end
 ---@param on_exit fun(exec: rspec.ExecutionResultContext)
 M.execute = function(spec, on_exit)
   local notif = Notif(spec)
+
+  if not spec:executable_in_cwd() then
+    return notif.failure("Can't find RSpec executable in CWD", "RSpec: Command not found")
+  end
+
   local timer = Timer:new()
 
   ---@param obj vim.SystemCompleted

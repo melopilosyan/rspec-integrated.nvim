@@ -1,7 +1,11 @@
 local utils = require("rspec.utils")
 
 ---@class rspec.SuiteSpec : rspec.Spec
-local spec = utils.spec({ "--format=f", "--exclude-pattern=spec/system/*" })
+local spec = require("rspec.spec")()
+
+function spec:on_cmd_changed()
+  self:apply_cmd_options({ "--format=failures", "--exclude-pattern=spec/system/*" })
+end
 
 ---@param failures string[] List of strings in "file/path:line-number:failed test description" format
 local function to_qflist(failures)
@@ -21,6 +25,8 @@ local function to_qflist(failures)
 end
 
 return function(_)
+  spec:resolve_cmd()
+
   utils.execute(spec, function(exec)
     if exec.succeeded then
       exec.notify_success("All tests passed")
