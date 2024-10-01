@@ -8,7 +8,7 @@ function Timer.reltime()
   return vim.fn.reltimefloat(vim.fn.reltime())
 end
 
-function Timer:new()
+function Timer:start()
   self.__index = self
 
   return setmetatable({
@@ -16,7 +16,7 @@ function Timer:new()
   }, self)
 end
 
-function Timer:save_duration()
+function Timer:stop()
   self.duration = self:elapsed_seconds()
 end
 

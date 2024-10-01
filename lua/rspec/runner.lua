@@ -40,11 +40,11 @@ return function(spec)
 
   if spec:not_runnable(notif.failure) then return end
 
-  local timer = Timer:new()
+  local timer = Timer:start()
 
   ---@param obj vim.SystemCompleted
   vim.system(spec.cmd, { text = true }, vim.schedule_wrap(function(obj)
-    timer:save_duration()
+    timer:stop()
 
     if obj.code ~= 0 and #obj.stdout == 0 then
       return notif.failure(split_lines(obj.stderr), "RSpec: Command failed")
