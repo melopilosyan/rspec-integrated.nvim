@@ -2,7 +2,7 @@ local M = {}
 
 ---@class rspec.Options
 --- Options controlling the behaviour of the plugin
----@field only_current_example? boolean Whether to run the test example the cursor is in or the entire spec file.
+---@field current_example? boolean Whether to run the test example the cursor is in or the entire spec file.
 ---@field repeat_last_run? boolean Whether to execute the last command regardless of the current file and/or cursor position.
 ---@field suite? boolean Whether to run the entire test suite or the current spec file.
 
@@ -12,7 +12,7 @@ local M = {}
 ---   1) against the current spec file
 ---     registering failures as Neovim diagnostic entries
 ---     a) against the current test example
----        if called with the `only_current_example = true` option
+---        if called with the `current_example = true` option
 ---     b) repeats last run
 ---        if triggered not in a spec file buffer or
 ---        if called with the `repeat_last_run = true` option
@@ -24,7 +24,7 @@ local M = {}
 ---   require("rspec.integrated").run() -- (1)
 ---   require("rspec.integrated").run({ suite = true }) -- (2)
 ---   require("rspec.integrated").run({ repeat_last_run = true }) -- (1.b)
----   require("rspec.integrated").run({ only_current_example = true }) -- (1.a)
+---   require("rspec.integrated").run({ current_example = true }) -- (1.a)
 --- ```
 ---@param options? rspec.Options
 M.run = function(options)

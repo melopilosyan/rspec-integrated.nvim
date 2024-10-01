@@ -59,7 +59,8 @@ return function()
 
   ---@param opts rspec.Options
   function spec:assign_options(opts)
-    self.run_current_example = opts.only_current_example
+    ---@diagnostic disable-next-line: undefined-field
+    self.run_current_example = opts.current_example or opts.only_current_example
     self.repeat_last_run = opts.repeat_last_run
     self.suite = opts.suite
   end
