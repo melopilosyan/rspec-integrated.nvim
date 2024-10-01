@@ -1,5 +1,5 @@
-local Timer = require("rspec.utils.timer")
-local Notif = require("rspec.utils.notif")
+local Timer = require("rspec.timer")
+local Notif = require("rspec.notif")
 
 ---@class rspec.ExecutionResultContext
 ---@field stdout string[]
