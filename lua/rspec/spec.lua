@@ -34,7 +34,7 @@ return function()
     self.cwd = cwd
     self.cmd = command()
 
-    if self:executable_in_cwd() then self:on_cmd_changed() end
+    self:on_cmd_changed()
   end
 
   function spec:resolve_run_context()
