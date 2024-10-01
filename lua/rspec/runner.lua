@@ -1,8 +1,6 @@
 local Timer = require("rspec.utils.timer")
 local Notif = require("rspec.utils.notif")
 
-local M = {}
-
 ---@class rspec.ExecutionResultContext
 ---@field stdout string[]
 ---@field succeeded boolean
@@ -33,13 +31,14 @@ local function failure_error_msg(stdout)
 end
 
 ---@param spec rspec.Spec
----@param on_exit fun(exec: rspec.ExecutionResultContext)
-M.execute = function(spec, on_exit)
+return function(spec)
   local notif = Notif(spec)
 
   if not spec:executable_in_cwd() then
     return notif.failure("Can't find RSpec executable in CWD", "RSpec: Command not found")
   end
+
+  if spec:not_runnable(notif.failure) then return end
 
   local timer = Timer:new()
 
@@ -53,7 +52,7 @@ M.execute = function(spec, on_exit)
       return notif.failure(failure_error_msg(obj.stdout), "RSpec: Command failed")
     end
 
-    on_exit({
+    spec.on_exit({
       stdout = split_lines(obj.stdout),
       succeeded = obj.code == 0,
       notify_failure = notif.failure,
@@ -63,5 +62,3 @@ M.execute = function(spec, on_exit)
     })
   end))
 end
-
-return M

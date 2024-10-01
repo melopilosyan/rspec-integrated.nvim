@@ -32,7 +32,7 @@ M.run = function(options)
 
   vim.cmd("silent! wa")
 
-  require(options.suite and "rspec.suite_runner" or "rspec.file_runner")(options)
+  require(options.suite and "rspec.integrations.suite" or "rspec.integrations.file"):run(options)
 end
 
 -- For backward compatibility

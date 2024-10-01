@@ -1,5 +1,3 @@
-local utils = require("rspec.utils")
-
 -- Local globals
 local DROP_ERROR_CLASSES  = "RSpec::Expectations"
 local SPEC_FILE_PATTERN   = "_spec.rb$"
@@ -28,12 +26,7 @@ function spec:on_cmd_changed()
   self:apply_cmd_options({ "--format=json" })
   self.filepath_position = #self.cmd + 1
   self.cwd_length = #self.cwd + 1
-end
-
----@param options rspec.Options
-function spec:assign_params(options)
-  self.run_current_example = options.only_current_example
-  self.repeat_last_run = options.repeat_last_run
+  self.path = nil
 end
 
 function spec:cmd_argument()
@@ -46,7 +39,7 @@ function spec:should_update_path()
   return self.in_spec_file and (not self.path or self.current_path ~= self.path)
 end
 
-function spec:resolve_cmd_argument()
+function spec:resolve_run_context()
   if self.repeat_last_run then return end
 
   self.current_path = vim.fn.expand("%:.")
@@ -61,6 +54,13 @@ function spec:resolve_cmd_argument()
 
   self.current_linenr = vim.api.nvim_win_get_cursor(0)[1]
   self.cmd[self.filepath_position] = self:cmd_argument()
+end
+
+function spec:not_runnable(notify_failure)
+  if not self.path then
+    notify_failure("Run it on a *_spec.rb file", "RSpec: Not a spec file")
+    return true
+  end
 end
 
 local not_json_output
@@ -197,21 +197,15 @@ function Integration:perform(result, exec)
   vim.diagnostic.set(DIAG.namespace, spec.bufnr, integration.failures, DIAG.config)
 end
 
----@param options rspec.Options
-return function(options)
-  spec:resolve_cmd()
-  spec:assign_params(options)
-  spec:resolve_cmd_argument()
+---@param exec rspec.ExecutionResultContext
+spec.on_exit = function(exec)
+  local ok, result = decode_json(exec.stdout)
 
-  if not spec.path then return end
-
-  utils.execute(spec, function(exec)
-    local ok, result = decode_json(exec.stdout)
-
-    if ok then
-      Integration:perform(result, exec)
-    else
-      exec.notify_failure(result, "RSpec: Error")
-    end
-  end)
+  if ok then
+    Integration:perform(result, exec)
+  else
+    exec.notify_failure(result, "RSpec: Error")
+  end
 end
+
+return spec

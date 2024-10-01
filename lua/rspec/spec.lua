@@ -23,7 +23,8 @@ return function()
   ---@field cmd string[] RSpec command for the project
   ---@field cwd string Current working directory
   ---@field path? string Test file path
-  ---@field on_cmd_changed fun() NOTE: Should be defined per runner
+  ---@field on_exit fun(exec: rspec.ExecutionResultContext) NOTE: Integrations must attach this method
+  ---@field on_cmd_changed fun() NOTE: Should be defined per integration
   local spec = {}
 
   function spec:resolve_cmd()
@@ -36,13 +37,40 @@ return function()
     if self:executable_in_cwd() then self:on_cmd_changed() end
   end
 
+  function spec:resolve_run_context()
+    -- Prepare for execution, e.g. build the full command to run.
+  end
+
   function spec:executable_in_cwd()
     return #self.cmd > 0
+  end
+
+  --- Each integration decides when and why it cannot run and displays a notification.
+  ---@param notify_failure fun(msg: string|string[], title?: string)
+  ---@diagnostic disable-next-line: unused-local
+  function spec:not_runnable(notify_failure)
+    return false
   end
 
   ---@param opts string[] Command line options: "--format=f"
   function spec:apply_cmd_options(opts)
     for _, arg in ipairs(opts) do table.insert(self.cmd, arg) end
+  end
+
+  ---@param opts rspec.Options
+  function spec:assign_options(opts)
+    self.run_current_example = opts.only_current_example
+    self.repeat_last_run = opts.repeat_last_run
+    self.suite = opts.suite
+  end
+
+  ---@param opts rspec.Options
+  function spec:run(opts)
+    self:assign_options(opts)
+    self:resolve_cmd()
+    self:resolve_run_context()
+
+    require("rspec.runner")(self)
   end
 
   return spec

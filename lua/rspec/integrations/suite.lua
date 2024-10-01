@@ -1,5 +1,3 @@
-local utils = require("rspec.utils")
-
 ---@class rspec.SuiteSpec : rspec.Spec
 local spec = require("rspec.spec")()
 
@@ -24,17 +22,16 @@ local function to_qflist(failures)
   return qflist
 end
 
-return function(_)
-  spec:resolve_cmd()
+---@param exec rspec.ExecutionResultContext
+spec.on_exit = function(exec)
+  if exec.succeeded then
+    exec.notify_success("All tests passed")
+  else
+    vim.fn.setqflist(to_qflist(exec.stdout), "r")
+    vim.cmd("copen")
 
-  utils.execute(spec, function(exec)
-    if exec.succeeded then
-      exec.notify_success("All tests passed")
-    else
-      vim.fn.setqflist(to_qflist(exec.stdout), "r")
-      vim.cmd("copen")
-
-      exec.notify_failure("See the quickfix list")
-    end
-  end)
+    exec.notify_failure("See the quickfix list")
+  end
 end
+
+return spec
