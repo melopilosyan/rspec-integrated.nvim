@@ -1,6 +1,10 @@
 ---@class rspec.SuiteSpec : rspec.Spec
 local spec = require("rspec.spec")()
 
+function spec:summary()
+  return "RSpec: Running the test suite..."
+end
+
 function spec:on_cmd_changed()
   self:apply_cmd_options({ "--format=failures", "--exclude-pattern=spec/system/*" })
 end

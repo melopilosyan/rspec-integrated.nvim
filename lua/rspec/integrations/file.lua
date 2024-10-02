@@ -22,6 +22,11 @@ local get_lines = vim.api.nvim_buf_get_lines
 ---@class rspec.FileSpec : rspec.Spec
 local spec = require("rspec.spec")()
 
+function spec:summary()
+  local example = self.run_current_example or self.path and self.cmd[self.filepath_position]:find(":")
+  return example and "RSpec: Running an example..." or "RSpec: Running a file..."
+end
+
 function spec:on_cmd_changed()
   self:apply_cmd_options({ "--format=json" })
   self.filepath_position = #self.cmd + 1

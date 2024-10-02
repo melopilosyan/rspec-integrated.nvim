@@ -1,15 +1,14 @@
 local nvim_notify_loaded, _ = pcall(require, "notify")
 
----@param spec rspec.Spec
-local function openning_notification_title(spec)
-  if not spec.path then return "RSpec: Running the test suite..." end
-
-  return spec.cmd[#spec.cmd]:find(":") and "RSpec: Running an example..."
-      or "RSpec: Running a file..."
-end
-
----@param spec rspec.Spec
-return function(spec)
+--- Defines a notification round for a specific run: start - progress - end.
+---
+--- Displays a notification with starting message and title, initiates the progress
+--- animation if applicable, and returns a Notif table with `success` and `failure`
+--- methods, ending the round.
+---
+---@param starting_msg string
+---@param starting_title string
+return function(starting_msg, starting_title)
   local icons = {
     ERROR = " ",
     INFO = " ",
@@ -47,8 +46,8 @@ return function(spec)
     })
   end
 
-  notify(table.concat(spec.cmd, " "), vim.log.levels.WARN, {
-    title = openning_notification_title(spec),
+  notify(starting_msg, vim.log.levels.WARN, {
+    title = starting_title,
     timeout = false,
   })
 

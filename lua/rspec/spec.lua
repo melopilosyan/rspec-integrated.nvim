@@ -23,8 +23,11 @@ return function()
   ---@field cmd string[] RSpec command for the project
   ---@field cwd string Current working directory
   ---@field path? string Test file path
-  ---@field on_exit fun(exec: rspec.ExecutionResultContext) NOTE: Integrations must attach this method
-  ---@field on_cmd_changed fun() NOTE: Should be defined per integration
+  ---
+  --- Integrations must define these methods
+  ---@field summary fun():string Job introduction (initial notification title)
+  ---@field on_exit fun(exec: rspec.ExecutionResultContext)
+  ---@field on_cmd_changed fun()
   local spec = {}
 
   function spec:resolve_cmd()
