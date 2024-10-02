@@ -31,6 +31,7 @@ function spec:on_cmd_changed()
   self:apply_cmd_options({ "--format=json" })
   self.filepath_position = #self.cmd + 1
   self.cwd_length = #self.cwd + 1
+  self.current_path = nil
   self.path = nil
 end
 
@@ -62,7 +63,10 @@ function spec:resolve_run_context()
 end
 
 function spec:not_runnable(notify_failure)
-  if not self.path then
+  if not self.current_path then
+    notify_failure("Unable to replay last run", "RSpec: No file run record in CWD")
+    return true
+  elseif not self.path then
     notify_failure("Run it on a *_spec.rb file", "RSpec: Not a spec file")
     return true
   end
