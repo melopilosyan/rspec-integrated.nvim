@@ -48,7 +48,7 @@ return function(spec)
 
     if obj.code ~= 0 and #obj.stdout == 0 then
       return notif.failure(split_lines(obj.stderr), "RSpec: Command failed")
-    elseif obj.stdout:find("Failure/Error:") then
+    elseif obj.stdout:find("^[^{]+Failure/Error:") then
       return notif.failure(failure_error_msg(obj.stdout), "RSpec: Command failed")
     end
 
