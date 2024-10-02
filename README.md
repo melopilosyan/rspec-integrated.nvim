@@ -21,12 +21,13 @@ It uses Neovim's built-in features to fit seamlessly into your existing workflow
   Ideal during TDD and/or refactoring.
 * Can repeat the last run on command.
 * Runs the test suite (except system tests), presenting failures as a quickfix list.
-* Has good intuition when choosing RSpec execution command (in the following order of availability):
+* Has good intuition when choosing the RSpec execution command (in the following order of availability):
   1) `bin/rspec`
   2) `bundle exec rspec`
   3) `rspec`
+* Resets the command when the current working directory changes.
 * Saves open buffers before execution. (One less action to keep in mind.)
-* Shows non-RSpec output of the test run with error messages. \
+* Shows non-RSpec output with error messages. \
   Hint: Use `puts obj.pretty_inspect` to see it as it appears in the IRB console.
 
 ## Installation
