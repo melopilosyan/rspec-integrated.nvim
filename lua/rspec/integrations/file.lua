@@ -186,10 +186,12 @@ end
 
 ---@param exec rspec.ExecutionResultContext
 function Integration:notify_completion(exec)
+  local res = self.result
+
   if #self.failures == 0 then
-    exec.notify_success(self.result.summary_line)
+    exec.notify_success(fmt("%s in %.3fs", res.summary_line, res.summary.duration))
   else
-    exec.notify_failure(self.result.summary_line, self.notif_title)
+    exec.notify_failure(res.summary_line, self.notif_title)
   end
 end
 
