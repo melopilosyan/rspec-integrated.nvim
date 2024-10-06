@@ -40,7 +40,7 @@ return function(spec)
 
   if spec:not_runnable(notif.failure) then return end
 
-  local timer = Timer:start()
+  local timer = Timer():start()
 
   ---@param obj vim.SystemCompleted
   vim.system(spec.cmd, { text = true }, vim.schedule_wrap(function(obj)
@@ -57,7 +57,7 @@ return function(spec)
       succeeded = obj.code == 0,
       notify_failure = notif.failure,
       notify_success = function(msg)
-        notif.success(timer:attach_duration(msg))
+        notif.success(timer:append_runtime(msg))
       end,
     })
   end))
