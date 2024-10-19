@@ -10,7 +10,6 @@ return {
     local cmd = string.format("bin/rspec %s:%s", path, vim.api.nvim_win_get_cursor(0)[1])
 
     local buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_keymap(buf, "t", "<Esc>", "<C-\\><C-N>", { noremap = true })
 
     -- Open top-level horizontal split below
     local win_id = vim.api.nvim_open_win(buf, true, { split = "below", win = -1 })
@@ -24,5 +23,7 @@ return {
     vim.api.nvim_create_autocmd("TermClose", { buffer = buf, command = "bd" })
     -- Hide the terminal buffer from buffers list
     vim.api.nvim_set_option_value("buflisted", false, { scope = "local" })
+    -- Map Esc key in terminal to switch to nomal mode
+    vim.api.nvim_buf_set_keymap(buf, "t", "<Esc>", "<C-\\><C-N>", { noremap = true })
   end
 }
