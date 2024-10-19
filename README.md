@@ -13,6 +13,7 @@ It integrates the test results back into Neovim. So you don't have to take your 
 It uses Neovim's built-in features to fit seamlessly into your existing workflow:
 * `vim.notify` for notifications.
 * `vim.diagnostics` or `quickfix list` for presentation of test failures.
+* Terminal emulator for interactive debugging.
 
 ## Features
 * Runs RSpec spec files individually, registering failures as Neovim diagnostic entries.
@@ -21,6 +22,7 @@ It uses Neovim's built-in features to fit seamlessly into your existing workflow
   Ideal during TDD and/or refactoring.
 * Can repeat the last run on command.
 * Runs the test suite (except system tests), presenting failures as a quickfix list.
+* Allows interactive debugging by running the nearest test example in the terminal.
 * Has good intuition when choosing the RSpec execution command (in the following order of availability):
   1) `bin/rspec`
   2) `bundle exec rspec`
@@ -58,6 +60,7 @@ local opts = { silent = true, noremap = true }
 vim.keymap.set("n", "<leader>tI", "<cmd>lua require('rspec.integrated').run()<cr>", opts)
 vim.keymap.set("n", "<leader>ti", "<cmd>lua require('rspec.integrated').run({current_example = true})<cr>", opts)
 vim.keymap.set("n", "<leader>t.", "<cmd>lua require('rspec.integrated').run({repeat_last_run = true})<cr>", opts)
+vim.keymap.set("n", "<leader>td", "<cmd>lua require('rspec.integrated').run({debug = true})<cr>", opts)
 vim.keymap.set("n", "<leader>tS", "<cmd>lua require('rspec.integrated').run({suite = true})<cr>", opts)
 ```
 
@@ -66,6 +69,7 @@ vim.keymap.set("n", "<leader>tS", "<cmd>lua require('rspec.integrated').run({sui
 nnoremap <leader>tI <cmd>lua require('rspec.integrated').run()<cr>
 nnoremap <leader>ti <cmd>lua require('rspec.integrated').run({current_example = true})<cr>
 nnoremap <leader>t. <cmd>lua require('rspec.integrated').run({repeat_last_run = true})<cr>
+nnoremap <leader>td <cmd>lua require('rspec.integrated').run({debug = true})<cr>
 nnoremap <leader>tS <cmd>lua require('rspec.integrated').run({suite = true})<cr>
 ```
 

@@ -5,6 +5,18 @@ local M = {}
 ---@field current_example? boolean Whether to run the test example the cursor is in or the entire spec file.
 ---@field repeat_last_run? boolean Whether to execute the last command regardless of the current file and/or cursor position.
 ---@field suite? boolean Whether to run the entire test suite or the current spec file.
+---@field debug? boolean Whether to run the nearest example in the terminal, allowing interactive debugging.
+
+---@param options rspec.Options
+local function integration_name(options)
+  if options.debug then
+    return "debug"
+  elseif options.suite then
+    return "suite"
+  else
+    return "file"
+  end
+end
 
 --- Plugin's entry point.
 ---
@@ -18,11 +30,14 @@ local M = {}
 ---        if called with the `repeat_last_run = true` option
 ---   2) against the test suite
 ---     displaying failures as a quickfix list
+---   3) against the nearest example in the terminal
+---     allowing interactive debugging
 ---
 --- Usage:
 --- ```lua
 ---   require("rspec.integrated").run() -- (1)
 ---   require("rspec.integrated").run({ suite = true }) -- (2)
+---   require("rspec.integrated").run({ debug = true }) -- (3)
 ---   require("rspec.integrated").run({ repeat_last_run = true }) -- (1.b)
 ---   require("rspec.integrated").run({ current_example = true }) -- (1.a)
 --- ```
@@ -32,7 +47,7 @@ M.run = function(options)
 
   vim.cmd("silent! wa")
 
-  require(options.suite and "rspec.integrations.suite" or "rspec.integrations.file"):run(options)
+  require("rspec.integrations." .. integration_name(options)):run(options)
 end
 
 -- For backward compatibility
