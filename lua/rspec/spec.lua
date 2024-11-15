@@ -23,6 +23,7 @@ return function()
   ---@field cmd string[] RSpec command for the project
   ---@field cwd string Current working directory
   ---@field path? string Test file path
+  ---@field executable_in_cwd boolean Whether an RSpec executable is found to run from the CWD
   ---
   --- Integrations must define these methods
   ---@field summary fun():string Job introduction (initial notification title)
@@ -32,20 +33,17 @@ return function()
 
   function spec:resolve_cmd()
     local cwd = vim.fn.getcwd() .. "/"
-    if self.cwd == cwd then return end
+    if self.cwd == cwd and self.executable_in_cwd then return end
 
     self.cwd = cwd
     self.cmd = command()
+    self.executable_in_cwd = #self.cmd > 0
 
     self:on_cmd_changed()
   end
 
   function spec:resolve_run_context()
     -- Prepare for execution, e.g. build the full command to run.
-  end
-
-  function spec:executable_in_cwd()
-    return #self.cmd > 0
   end
 
   --- Each integration decides when and why it cannot run and displays a notification.

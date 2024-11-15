@@ -34,7 +34,7 @@ end
 return function(spec)
   local notif = Notif(table.concat(spec.cmd, " "), spec:summary())
 
-  if not spec:executable_in_cwd() then
+  if not spec.executable_in_cwd then
     return notif.failure("Can't find RSpec executable in CWD", "RSpec: Command not found")
   end
 
