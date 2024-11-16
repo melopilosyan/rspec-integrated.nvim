@@ -1,6 +1,5 @@
 -- Local globals
 local DROP_ERROR_CLASSES  = "RSpec::Expectations"
-local SPEC_FILE_PATTERN   = "_spec.rb$"
 local FIRST_CHARACTER     = "%S"
 local FAILURE_STATUS      = "failed"
 local LINENR_REGEX        = ":(%d+)"
@@ -48,8 +47,7 @@ end
 function spec:resolve_run_context()
   if self.repeat_last_run then return end
 
-  self.current_path = vim.fn.expand("%:.")
-  self.in_spec_file = self.current_path:find(SPEC_FILE_PATTERN)
+  self:set_current_spec_file_path()
 
   if self:should_update_path() then
     self.path = self.current_path
@@ -62,7 +60,7 @@ function spec:resolve_run_context()
   self.cmd[self.filepath_position] = self:cmd_argument()
 end
 
-function spec:not_runnable(notify_failure)
+function spec:integration_not_runnable(notify_failure)
   if not self.current_path then
     notify_failure("Unable to replay last run", "RSpec: No file run record in CWD")
     return true

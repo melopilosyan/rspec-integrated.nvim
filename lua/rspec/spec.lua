@@ -42,16 +42,32 @@ return function()
     self:on_cmd_changed()
   end
 
+  function spec:set_current_spec_file_path()
+    self.current_path = vim.fn.expand("%:.")
+    self.in_spec_file = self.current_path:find("_spec.rb$")
+  end
+
+  function spec:cmd_to_string()
+    return table.concat(self.cmd, " ")
+  end
+
   function spec:resolve_run_context()
     -- Prepare for execution, e.g. build the full command to run.
   end
 
-  --- Each integration decides when and why it cannot run and displays a notification.
   ---@param notify_failure fun(msg: string|string[], title?: string)
-  ---@diagnostic disable-next-line: unused-local
   function spec:not_runnable(notify_failure)
-    return false
+    if not spec.executable_in_cwd then
+      notify_failure("Can't find RSpec executable in CWD", "RSpec: Command not found")
+      return true
+    end
+
+    return self:integration_not_runnable(notify_failure)
   end
+
+  --- Each integration decides when and why it cannot run and displays a notification.
+  ---@diagnostic disable-next-line: unused-local
+  function spec:integration_not_runnable(notify) return false end
 
   ---@param opts string[] Command line options: "--format=f"
   function spec:apply_cmd_options(opts)
@@ -66,13 +82,16 @@ return function()
     self.suite = opts.suite
   end
 
+  --- Set the default runner, allowing integrations to change it.
+  spec.runner = require("rspec.runner")
+
   ---@param opts rspec.Options
   function spec:run(opts)
     self:assign_options(opts)
     self:resolve_cmd()
     self:resolve_run_context()
 
-    require("rspec.runner")(self)
+    self.runner(self)
   end
 
   return spec
