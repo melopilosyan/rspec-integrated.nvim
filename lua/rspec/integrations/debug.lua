@@ -35,8 +35,11 @@ spec.runner = function()
   vim.cmd("terminal " .. spec.full_cmd)
   vim.cmd("startinsert")
 
-  -- Automatically close the window after finishing the debugging session
-  vim.api.nvim_create_autocmd("TermClose", { buffer = buf, command = "bd" })
+  -- Automatically close the window if the process exits successfully
+  vim.api.nvim_create_autocmd("TermClose", {
+    buffer = buf,
+    command = "if !v:event.status | exe 'bdelete! '..expand('<abuf>') | endif"
+  })
   -- Hide the terminal buffer from buffers list
   vim.api.nvim_set_option_value("buflisted", false, { scope = "local" })
   -- Map Esc key in terminal to switch to nomal mode
