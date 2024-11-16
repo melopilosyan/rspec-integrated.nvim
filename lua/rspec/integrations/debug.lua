@@ -38,7 +38,9 @@ spec.runner = function()
   -- Automatically close the window if the process exits successfully
   vim.api.nvim_create_autocmd("TermClose", {
     buffer = buf,
-    command = "if !v:event.status | exe 'bdelete! '..expand('<abuf>') | endif"
+    callback = function()
+      if vim.v.event.status == 0 then vim.api.nvim_buf_delete(buf, {}) end
+    end
   })
   -- Hide the terminal buffer from buffers list
   vim.api.nvim_set_option_value("buflisted", false, { scope = "local" })
