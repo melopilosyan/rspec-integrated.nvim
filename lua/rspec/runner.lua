@@ -5,7 +5,7 @@ local Notif = require("rspec.notif")
 ---@field stdout string[]
 ---@field succeeded boolean
 ---@field notify_success fun(msg: string)
----@field notify_failure fun(msg: string|string[], title?: string)
+---@field notify_failure rspec.FailureFun
 
 local function split_lines(str)
   return vim.split(str, "\n", { trimempty = true })

@@ -1,6 +1,4 @@
-local function notify_failure(msg, title)
-  vim.notify(msg, vim.log.levels.ERROR, { title = title, icon = " " })
-end
+local notify_failure = require("rspec.notif")()
 
 ---@class rspec.DebugSpec : rspec.Spec
 local spec = require("rspec.spec")()
@@ -23,6 +21,7 @@ function spec:integration_not_runnable(notify)
 end
 
 spec.runner = function()
+  ---@diagnostic disable-next-line: param-type-mismatch
   if spec:not_runnable(notify_failure) then return end
 
   local buf = vim.api.nvim_create_buf(false, true)

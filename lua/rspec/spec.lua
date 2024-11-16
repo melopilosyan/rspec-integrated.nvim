@@ -55,7 +55,7 @@ return function()
     -- Prepare for execution, e.g. build the full command to run.
   end
 
-  ---@param notify_failure fun(msg: string|string[], title?: string)
+  ---@param notify_failure rspec.FailureFun
   function spec:not_runnable(notify_failure)
     if not spec.executable_in_cwd then
       notify_failure("Can't find RSpec executable in CWD", "RSpec: Command not found")
@@ -66,8 +66,8 @@ return function()
   end
 
   --- Each integration decides when and why it cannot run and displays a notification.
-  ---@diagnostic disable-next-line: unused-local
-  function spec:integration_not_runnable(notify) return false end
+  ---@param _ rspec.FailureFun
+  function spec:integration_not_runnable(_) return false end
 
   ---@param opts string[] Command line options: "--format=f"
   function spec:apply_cmd_options(opts)

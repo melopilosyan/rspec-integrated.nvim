@@ -1,4 +1,23 @@
 local nvim_notify_loaded, _ = pcall(require, "notify")
+local ICONS = {
+  ERROR = " ",
+  INFO = " ",
+}
+
+local function end_params(msg, level, title)
+  if not nvim_notify_loaded and type(msg) == "table" then
+    msg = table.concat(msg, "\n")
+  end
+
+  return msg, vim.log.levels[level], {
+    icon = ICONS[level],
+    title = title,
+    timeout = 3000,
+    hide_from_history = false,
+  }
+end
+
+---@alias rspec.FailureFun fun(msg: string|string[], title?: string)
 
 --- Defines a notification round for a specific run: start - progress - end.
 ---
@@ -6,13 +25,17 @@ local nvim_notify_loaded, _ = pcall(require, "notify")
 --- animation if applicable, and returns a Notif table with `success` and `failure`
 --- methods, ending the round.
 ---
----@param starting_msg string
----@param starting_title string
+--- Or, if called without parameters, returns a one-off `notify_failure` function.
+---
+---@param starting_msg? string
+---@param starting_title? string
+---@return rspec.FailureFun | rspec.Notif
 return function(starting_msg, starting_title)
-  local icons = {
-    ERROR = " ",
-    INFO = " ",
-  }
+  if not starting_msg then
+    return function(msg, title)
+      vim.notify(end_params(msg, "ERROR", title))
+    end
+  end
 
   ---@type number|nil Progress frame index or nil to stop
   local frame = 1
@@ -35,17 +58,6 @@ return function(starting_msg, starting_title)
     vim.defer_fn(simulate_progress_animation, 150)
   end
 
-  local function complete(msg, level, title)
-    frame = nil
-
-    notify(msg, vim.log.levels[level], {
-      icon = icons[level],
-      title = title,
-      timeout = 3000,
-      hide_from_history = false,
-    })
-  end
-
   notify(starting_msg, vim.log.levels.WARN, {
     title = starting_title,
     timeout = false,
@@ -55,17 +67,15 @@ return function(starting_msg, starting_title)
 
   ---@class rspec.Notif
   ---@field success fun(msg: string)
-  ---@field failure fun(msg: string|string[], title?: string)
+  ---@field failure rspec.FailureFun
   return {
     success = function(msg)
-      complete(msg, "INFO", "RSpec: Succeeded")
+      frame = nil
+      notify(end_params(msg, "INFO", "RSpec: Test passed"))
     end,
-
     failure = function(msg, title)
-      if not nvim_notify_loaded and type(msg) == "table" then
-        msg = table.concat(msg, "\n")
-      end
-      complete(msg, "ERROR", title or "RSpec: Failed")
+      frame = nil
+      notify(end_params(msg, "ERROR", title or "RSpec: Test Failed"))
     end,
   }
 end
