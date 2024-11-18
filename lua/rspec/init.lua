@@ -59,7 +59,4 @@ M.run = function(options)
   require("rspec.integrations." .. integration_name(options)):run(options)
 end
 
--- For backward compatibility
-M.run_spec_file = M.run
-
 return M
