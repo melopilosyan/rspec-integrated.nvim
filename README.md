@@ -57,20 +57,20 @@ Add mappings in your `neovim` configuration to invoke the exposed function.
 ```lua
 -- Lua API
 local opts = { silent = true, noremap = true }
-vim.keymap.set("n", "<leader>tI", "<cmd>lua require('rspec.integrated').run()<cr>", opts)
-vim.keymap.set("n", "<leader>ti", "<cmd>lua require('rspec.integrated').run({current_example = true})<cr>", opts)
-vim.keymap.set("n", "<leader>t.", "<cmd>lua require('rspec.integrated').run({repeat_last_run = true})<cr>", opts)
-vim.keymap.set("n", "<leader>td", "<cmd>lua require('rspec.integrated').run({debug = true})<cr>", opts)
-vim.keymap.set("n", "<leader>tS", "<cmd>lua require('rspec.integrated').run({suite = true})<cr>", opts)
+vim.keymap.set("n", "<leader>tI", "<cmd>lua require('rspec').run()<cr>", opts)
+vim.keymap.set("n", "<leader>ti", "<cmd>lua require('rspec').run({current_example = true})<cr>", opts)
+vim.keymap.set("n", "<leader>t.", "<cmd>lua require('rspec').run({repeat_last_run = true})<cr>", opts)
+vim.keymap.set("n", "<leader>td", "<cmd>lua require('rspec').run({debug = true})<cr>", opts)
+vim.keymap.set("n", "<leader>tS", "<cmd>lua require('rspec').run({suite = true})<cr>", opts)
 ```
 
 ```vim
 " VimL
-nnoremap <leader>tI <cmd>lua require('rspec.integrated').run()<cr>
-nnoremap <leader>ti <cmd>lua require('rspec.integrated').run({current_example = true})<cr>
-nnoremap <leader>t. <cmd>lua require('rspec.integrated').run({repeat_last_run = true})<cr>
-nnoremap <leader>td <cmd>lua require('rspec.integrated').run({debug = true})<cr>
-nnoremap <leader>tS <cmd>lua require('rspec.integrated').run({suite = true})<cr>
+nnoremap <leader>tI <cmd>lua require('rspec').run()<cr>
+nnoremap <leader>ti <cmd>lua require('rspec').run({current_example = true})<cr>
+nnoremap <leader>t. <cmd>lua require('rspec').run({repeat_last_run = true})<cr>
+nnoremap <leader>td <cmd>lua require('rspec').run({debug = true})<cr>
+nnoremap <leader>tS <cmd>lua require('rspec').run({suite = true})<cr>
 ```
 
 ## Configuration

@@ -44,11 +44,11 @@ end
 ---
 --- Usage:
 --- ```lua
----   require("rspec.integrated").run() -- (1)
----   require("rspec.integrated").run({ suite = true }) -- (2)
----   require("rspec.integrated").run({ debug = true }) -- (3)
----   require("rspec.integrated").run({ repeat_last_run = true }) -- (1.b)
----   require("rspec.integrated").run({ current_example = true }) -- (1.a)
+---   require("rspec").run() -- (1)
+---   require("rspec").run({ suite = true }) -- (2)
+---   require("rspec").run({ debug = true }) -- (3)
+---   require("rspec").run({ repeat_last_run = true }) -- (1.b)
+---   require("rspec").run({ current_example = true }) -- (1.a)
 --- ```
 ---@param options? rspec.Options
 M.run = function(options)
