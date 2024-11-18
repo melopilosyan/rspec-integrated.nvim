@@ -7,15 +7,24 @@ local M = {}
 ---@field suite? boolean Whether to run the entire test suite or the current spec file.
 ---@field debug? boolean Whether to run the nearest example in the terminal, allowing interactive debugging.
 
+local previous_integration = nil
+
 ---@param options rspec.Options
 local function integration_name(options)
-  if options.debug then
-    return "debug"
+  local name
+
+  if options.repeat_last_run and previous_integration then
+    name = previous_integration
+  elseif options.debug then
+    name = "debug"
   elseif options.suite then
-    return "suite"
+    name = "suite"
   else
-    return "file"
+    name = "file"
   end
+
+  previous_integration = name
+  return name
 end
 
 --- Plugin's entry point.

@@ -30,44 +30,14 @@ function spec:on_cmd_changed()
   self:apply_cmd_options({ "--format=json" })
   self.filepath_position = #self.cmd + 1
   self.cwd_length = #self.cwd + 1
-  self.current_path = nil
-  self.path = nil
 end
 
-function spec:cmd_argument()
-  if not self.run_current_example then return self.path end
+function spec:build_final_command()
+  local path_argument = self.run_current_example and
+      fmt("%s:%s", self.path, self.current_linenr) or self.path
 
-  return fmt("%s:%s", self.path, self.current_linenr)
-end
-
-function spec:should_update_path()
-  return self.in_spec_file and (not self.path or self.current_path ~= self.path)
-end
-
-function spec:resolve_run_context()
-  if self.repeat_last_run then return end
-
-  self:set_current_spec_file_path()
-
-  if self:should_update_path() then
-    self.path = self.current_path
-    self.bufnr = vim.api.nvim_get_current_buf()
-  end
-
-  if not self.in_spec_file then return end
-
-  self.current_linenr = vim.api.nvim_win_get_cursor(0)[1]
-  self.cmd[self.filepath_position] = self:cmd_argument()
-end
-
-function spec:integration_not_runnable(notify_failure)
-  if not self.current_path then
-    notify_failure("Unable to replay last run", "RSpec: No file run record in CWD")
-    return true
-  elseif not self.path then
-    notify_failure("Run it on a *_spec.rb file", "RSpec: Not a spec file")
-    return true
-  end
+  self.bufnr = vim.api.nvim_get_current_buf()
+  self.cmd[self.filepath_position] = path_argument
 end
 
 local not_json_output

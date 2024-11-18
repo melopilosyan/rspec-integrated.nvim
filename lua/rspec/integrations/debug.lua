@@ -7,17 +7,8 @@ function spec:on_cmd_changed()
   self.cmd_str = self:cmd_to_string()
 end
 
-function spec:resolve_run_context()
-  self:set_current_spec_file_path()
-  local current_linenr = vim.api.nvim_win_get_cursor(0)[1]
-  self.full_cmd = string.format("%s %s:%s", self.cmd_str, self.current_path, current_linenr)
-end
-
-function spec:integration_not_runnable(notify)
-  if not self.in_spec_file then
-    notify("Run it on a *_spec.rb file", "RSpec: Not a spec file")
-    return true
-  end
+function spec:build_final_command()
+  self.full_cmd = string.format("%s %s:%s", self.cmd_str, self.path, self.current_linenr)
 end
 
 spec.runner = function()

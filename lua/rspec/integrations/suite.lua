@@ -9,6 +9,10 @@ function spec:on_cmd_changed()
   self:apply_cmd_options({ "--format=failures", "--exclude-pattern=spec/system/*" })
 end
 
+-- Opt out of these features
+function spec:resolve_run_context() end
+function spec:integration_not_runnable(_) return false end
+
 ---@param failures string[] List of strings in "file/path:line-number:failed test description" format
 local function to_qflist(failures)
   local qflist, re, path, lnum, desc
