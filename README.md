@@ -49,28 +49,28 @@ use { "melopilosyan/rspec-integrated.nvim" }
 ```
 
 ## Usage
-By default `rspec-integrated.nvim` doesn't add any mappings or create user commands.
+By default `rspec-integrated.nvim` doesn't add mappings or create user commands.
 In fact, it will be auto-loaded only on the first invocation.
 
-Add mappings in your `neovim` configuration to invoke the exposed function.
+Add mappings in your `neovim` configuration to invoke exposed functions.
 
 ```lua
 -- Lua API
 local opts = { silent = true, noremap = true }
-vim.keymap.set("n", "<leader>tI", "<cmd>lua require('rspec').run()<cr>", opts)
-vim.keymap.set("n", "<leader>ti", "<cmd>lua require('rspec').run({current_example = true})<cr>", opts)
-vim.keymap.set("n", "<leader>t.", "<cmd>lua require('rspec').run({repeat_last_run = true})<cr>", opts)
-vim.keymap.set("n", "<leader>td", "<cmd>lua require('rspec').run({debug = true})<cr>", opts)
-vim.keymap.set("n", "<leader>tS", "<cmd>lua require('rspec').run({suite = true})<cr>", opts)
+vim.keymap.set("n", "<leader>tI", "<cmd>lua require('rspec').run_current_file()<cr>", opts)
+vim.keymap.set("n", "<leader>ti", "<cmd>lua require('rspec').run_current_example()<cr>", opts)
+vim.keymap.set("n", "<leader>t.", "<cmd>lua require('rspec').repeat_last_run()<cr>", opts)
+vim.keymap.set("n", "<leader>td", "<cmd>lua require('rspec').debug()<cr>", opts)
+vim.keymap.set("n", "<leader>tS", "<cmd>lua require('rspec').run_suite()<cr>", opts)
 ```
 
 ```vim
 " VimL
-nnoremap <leader>tI <cmd>lua require('rspec').run()<cr>
-nnoremap <leader>ti <cmd>lua require('rspec').run({current_example = true})<cr>
-nnoremap <leader>t. <cmd>lua require('rspec').run({repeat_last_run = true})<cr>
-nnoremap <leader>td <cmd>lua require('rspec').run({debug = true})<cr>
-nnoremap <leader>tS <cmd>lua require('rspec').run({suite = true})<cr>
+nnoremap <leader>tI <cmd>lua require('rspec').run_current_file()<cr>
+nnoremap <leader>ti <cmd>lua require('rspec').run_current_example()<cr>
+nnoremap <leader>t. <cmd>lua require('rspec').repeat_last_run()<cr>
+nnoremap <leader>td <cmd>lua require('rspec').debug()<cr>
+nnoremap <leader>tS <cmd>lua require('rspec').run_suite()<cr>
 ```
 
 ## Configuration

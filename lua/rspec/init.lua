@@ -51,12 +51,34 @@ end
 ---   require("rspec").run({ current_example = true }) -- (1.a)
 --- ```
 ---@param options? rspec.Options
-M.run = function(options)
+local function run(options)
   options = options or {}
 
   vim.cmd("silent! wa")
 
   require("rspec.integrations." .. integration_name(options)):run(options)
+end
+
+M.run = run
+
+M.run_current_file = function()
+  run()
+end
+
+M.run_current_example = function()
+  run { current_example = true }
+end
+
+M.run_suite = function()
+  run { suite = true }
+end
+
+M.debug = function()
+  run { debug = true }
+end
+
+M.repeat_last_run = function()
+  run { repeat_last_run = true }
 end
 
 return M
