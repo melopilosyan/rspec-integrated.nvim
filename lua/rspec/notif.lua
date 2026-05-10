@@ -1,4 +1,7 @@
 local nvim_notify_loaded, _ = pcall(require, "notify")
+local snacks_notifier_loaded, _ = pcall(require, "snacks.notifier")
+local should_simulate_progress_animaton = nvim_notify_loaded or snacks_notifier_loaded
+
 local ICONS = {
   ERROR = " ",
   INFO = " ",
@@ -43,7 +46,8 @@ return function(starting_msg, starting_title)
   local notification = nil
 
   local function notify(msg, ll, opts)
-    opts.replace = notification
+    opts.id = notification -- Snacks.notifier
+    opts.replace = notification -- nvim-notify
     opts.icon = opts.icon or progress_frames[frame]
 
     notification = vim.notify(msg, ll, opts)
@@ -52,8 +56,8 @@ return function(starting_msg, starting_title)
   local function simulate_progress_animation()
     if frame == nil then return end
 
-    frame = (frame + 1) % #progress_frames
-    notify(nil, nil, { hide_from_history = true })
+    frame = (frame % #progress_frames) + 1
+    notify(starting_msg, vim.log.levels.WARN, { title = starting_title, hide_from_history = true })
 
     vim.defer_fn(simulate_progress_animation, 150)
   end
@@ -63,7 +67,7 @@ return function(starting_msg, starting_title)
     timeout = false,
   })
 
-  if nvim_notify_loaded then simulate_progress_animation() end
+  if should_simulate_progress_animaton then simulate_progress_animation() end
 
   ---@class rspec.Notif
   ---@field success fun(msg: string)

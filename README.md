@@ -79,9 +79,11 @@ You should be able to just say “RSpec run” and
 display/jump to diagnostic entries as you normally do with LSP or linter messages,
 or use quickfix list to navigate failures across multiple files.
 
-Notifications designed to work with the [nvim-notify](https://github.com/rcarriga/nvim-notify) plugin.
-But even without it, you'll still see the Neovim's default print lines,
-or the look of the plugin assigned to `vim.notify`.
+### Supported notifier plugins
+Notifications are designed to work with [nvim-notify](https://github.com/rcarriga/nvim-notify)
+and [Snacks.notifier](https://github.com/folke/snacks.nvim/blob/main/docs/notifier.md) plugins.
+If neither is found, you'll still see the Neovim's standard output
+or the appearance of the plugin assigned to `vim.notify`.
 
 ## Credit
 Big shout-out to [@tjdevries](https://github.com/tjdevries) for the initial idea and
